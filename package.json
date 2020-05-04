@@ -1,0 +1,73 @@
+{
+  "name": "did-web-driver",
+  "description": "A did:web method Decentralized Identifier (DID) resolver driver for the did-io library.",
+  "version": "0.0.1",
+  "author": {
+    "name": "Dmitri Zagidulin",
+    "url": "https://github.com/dmitrizagidulin/"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/interop-alliance/did-web-driver"
+  },
+  "homepage": "https://github.com/interop-alliance/did-web-driver",
+  "bugs": "https://github.com/interop-alliance/did-web-driver/issues",
+  "scripts": {
+    "test": "npm run standard && npm run test-node",
+    "test-node": "cross-env NODE_ENV=test mocha -r esm --preserve-symlinks -t 10000 test/**/*.spec.js",
+    "test-karma": "karma start test/karma.conf.js",
+    "nyc": "cross-env NODE_ENV=test nyc npm run test-node",
+    "standard": "standard"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "esm": "^3.2.25"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/plugin-transform-modules-commonjs": "^7.9.6",
+    "@babel/plugin-transform-runtime": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/runtime": "^7.9.6",
+    "babel-loader": "^8.1.0",
+    "chai": "^4.2.0",
+    "cross-env": "^7.0.2",
+    "dirty-chai": "^2.0.1",
+    "karma": "^5.0.4",
+    "karma-babel-preprocessor": "^8.0.1",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-mocha": "^2.0.1",
+    "karma-mocha-reporter": "^2.2.5",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^4.0.2",
+    "mocha": "^7.1.2",
+    "nyc": "^15.0.1",
+    "sinon": "^9.0.2",
+    "standard": "^14.3.3",
+    "webpack": "^4.43.0"
+  },
+  "main": "src/main.js",
+  "nyc": {
+    "reporter": [
+      "html",
+      "text-summary"
+    ],
+    "cache": true
+  },
+  "standard": {
+    "globals": [
+      "after",
+      "afterEach",
+      "before",
+      "beforeEach",
+      "describe",
+      "it",
+      "require"
+    ]
+  },
+  "engines": {
+    "node": ">=12.0"
+  }
+}
