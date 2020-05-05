@@ -1,3 +1,3 @@
 'use strict'
 
-export { DidWebResolver } from './resolver.js'
+export { DidWebDriver } from './DidWebDriver.js'
