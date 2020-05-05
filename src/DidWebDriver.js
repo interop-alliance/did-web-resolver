@@ -2,4 +2,4 @@
 
 // import axios from 'axios' // todo: consider 'apisauce' instead
 
-export class DidWebResolver {}
+export class DidWebDriver {}
