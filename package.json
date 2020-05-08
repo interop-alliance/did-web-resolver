@@ -18,11 +18,13 @@
     "test-node": "cross-env NODE_ENV=test mocha -r esm --preserve-symlinks -t 10000 test/**/*.spec.js",
     "test-karma": "karma start test/karma.conf.js",
     "nyc": "cross-env NODE_ENV=test nyc npm run test-node",
-    "standard": "standard"
+    "standard": "standard --fix"
   },
   "dependencies": {
     "axios": "^0.19.2",
-    "esm": "^3.2.25"
+    "did-io": "^0.8.1",
+    "esm": "^3.2.25",
+    "whatwg-url": "^8.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
