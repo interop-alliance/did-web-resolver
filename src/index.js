@@ -1,3 +1,3 @@
 'use strict'
 
-export { DidWebDriver } from './DidWebDriver.js'
+export { DidWebDriver, didFromUrl, urlFromDid } from './DidWebDriver.js'
