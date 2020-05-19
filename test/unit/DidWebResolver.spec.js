@@ -1,6 +1,11 @@
 'use strict'
 
-import { DidWebDriver, urlFromDid, didFromUrl } from '../../src'
+import { DidWebResolver, urlFromDid, didFromUrl } from '../../src'
+
+import { CryptoLD } from 'crypto-ld'
+import Ed25519KeyPair from 'ed25519-key-pair'
+const cryptoLd = new CryptoLD()
+cryptoLd.use(Ed25519KeyPair)
 
 import chai from 'chai'
 import dirtyChai from 'dirty-chai'
@@ -11,11 +16,26 @@ const { expect } = chai
 describe('DidWebDriver', () => {
   describe('constructor', () => {
     it('should exist', () => {
-      expect(new DidWebDriver()).to.exist()
+      expect(new DidWebResolver()).to.exist()
     })
   })
 
-  describe('urlFromDid', () => {
+  describe('generate()', () => {
+    let didWeb
+
+    beforeEach(async () => {
+      didWeb = new DidWebResolver({ cryptoLd })
+    })
+
+    it('should generate using default key map', async () => {
+      const url = 'https://example.com'
+      const { didDocument, didKeys } = await didWeb.generate({ url })
+
+      console.log(didDocument)
+    })
+  })
+
+  describe('urlFromDid()', () => {
     it('should error on missing did', () => {
       let error
       try {

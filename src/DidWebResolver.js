@@ -1,13 +1,16 @@
 'use strict'
 
 // import axios from 'axios' // todo: consider 'apisauce' instead
-// import { DidDocument } from 'did-io'
+import { DidDocument } from 'did-io'
 import { URL } from 'whatwg-url'
 
-const DEFAULT_KEY_TYPE = 'Ed25519VerificationKey2018'
-const DEFAULT_SUPPORTED_KEY_TYPES = [
-  'RsaVerificationKey2018', 'Ed25519VerificationKey2018'
-]
+const DEFAULT_KEY_MAP = {
+  capabilityInvocation: 'ed25519',
+  authentication: 'ed25519',
+  assertionMethod: 'ed25519',
+  capabilityDelegation: 'ed25519'
+  // keyAgreement: 'x25519'  // <- not yet supported
+}
 
 export function didFromUrl ({ url } = {}) {
   if(!url) {
@@ -54,23 +57,12 @@ export function urlFromDid ({ did } = {}) {
   return 'https://' + decodeURIComponent(host) + pathname
 }
 
-export class DidWebDriver {
-  constructor ({ supportedKeyTypes = DEFAULT_SUPPORTED_KEY_TYPES } = {}) {
+export class DidWebResolver {
+  constructor ({ cryptoLd, keyMap = DEFAULT_KEY_MAP } = {}) {
     // did:web:...
     this.method = 'web'
-    this.supportedKeyTypes = supportedKeyTypes
-  }
-
-  /**
-   * Generates and returns the id of a given key. Used by `did-io` drivers.
-   *
-   * @param {LDKeyPair} key
-   * @param {string} did
-   *
-   * @returns {Promise<string>} Returns the key's id.
-   */
-  async computeKeyId ({ key, did }) {
-    return `${did}#${key.fingerprint()}`
+    this.cryptoLd = cryptoLd
+    this.keyMap = keyMap
   }
 
   /**
@@ -80,7 +72,7 @@ export class DidWebDriver {
    * Usage:
    * ```
    *   const url = 'https://example.com'
-   *   const {didDocument, keys} = await didWeb.generate({url})
+   *   const { didDocument, didKeys } = await didWeb.generate({url})
    *   didDocument.id
    *   // -> 'did:web:example.com'
    * ```
@@ -89,23 +81,13 @@ export class DidWebDriver {
    * @param [id] {string} - A did:web DID. If absent, will be converted from url
    * @param [url] {string}
    *
-   * @param [keys={}] {object} Map of keys to be generated, by key purpose.
-   *
-   * @param [keyType] {string} If existing keys are not passed in, default
-   *   keys are generated using this key type (defaults to
-   *   'Ed25519VerificationKey2018').
-   *
    * @throws {Error}
    *
    * @returns {Promise<{didDocument: DidDocument, didKeys: object}>}
    */
-  async generate ({ id, url, keys = {}, keyType = DEFAULT_KEY_TYPE } = {}) {
-    if (!this.supportedKeyTypes.includes(keyType)) {
-      throw new Error(`Unknown key type: "${keyType}".`)
-    }
-
+  async generate ({ id, url, keyMap = this.keyMap, cryptoLd = this.cryptoLd } = {}) {
     const didDocument = new DidDocument({ id: id || didFromUrl({ url }) })
-    const { didKeys } = await didDocument.initKeys({ keys, keyType })
+    const { didKeys } = await didDocument.initKeys({ cryptoLd, keyMap })
     return { didDocument, didKeys }
   }
 

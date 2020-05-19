@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/interop-alliance/did-web-driver.svg?branch=master&style=flat-square)](https://travis-ci.org/interop-alliance/did-web-driver)
 [![NPM Version](https://img.shields.io/npm/v/did-web-driver.svg?style=flat-square)](https://npm.im/did-web-driver)
 
-> A did:web method Decentralized Identifier (DID) resolver driver for the did-io library.
+> A did:web method Decentralized Identifier (DID) resolver for the did-io library.
 
 ## Table of Contents
 
@@ -33,7 +33,30 @@ Other implementations:
 
 ## Usage
 
-TBD
+```js
+import { CryptoLD } from 'crypto-ld'
+import Ed25519KeyPair from 'ed25519-key-pair'
+
+const cryptoLd = new CryptoLD()
+cryptoLd.use(Ed25519KeyPair)
+
+import { DidWebResolver } from '@interop/did-web-resolver'
+const keyMap = { // default
+  capabilityInvocation: 'ed25519',
+  authentication: 'ed25519',
+  assertionMethod: 'ed25519',
+  capabilityDelegation: 'ed25519',
+  // keyAgreement: 'x25519'  // <- not yet supported
+}
+
+const didWeb = new DidWebResolver({ cryptoLd, keyMap })
+
+// Optionally use it with `did-io`
+import { DidResolver } from 'did-io'
+const didIo = new DidResolver()
+
+didIo.use(didWeb)
+```
 
 ## Install
 

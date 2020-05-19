@@ -1,7 +1,7 @@
 {
-  "name": "did-web-driver",
-  "description": "A did:web method Decentralized Identifier (DID) resolver driver for the did-io library.",
-  "version": "0.0.1",
+  "name": "@interop/did-web-resolver",
+  "description": "A did:web method Decentralized Identifier (DID) resolver for the did-io library.",
+  "version": "0.1.0",
   "author": {
     "name": "Dmitri Zagidulin",
     "url": "https://github.com/dmitrizagidulin/"
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
-    "did-io": "^0.8.1",
+    "did-io": "digitalbazaar/did-io#v0.9.x",
     "esm": "^3.2.25",
     "whatwg-url": "^8.0.0"
   },
@@ -35,7 +35,9 @@
     "babel-loader": "^8.1.0",
     "chai": "^4.2.0",
     "cross-env": "^7.0.2",
+    "crypto-ld": "digitalbazaar/crypto-ld#extract-key-pairs",
     "dirty-chai": "^2.0.1",
+    "ed25519-key-pair": "digitalbazaar/ed25519-key-pair#initial",
     "karma": "^5.0.4",
     "karma-babel-preprocessor": "^8.0.1",
     "karma-chai": "^0.1.0",
