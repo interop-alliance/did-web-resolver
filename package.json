@@ -22,9 +22,10 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "did-context": "^2.0.0",
     "did-io": "digitalbazaar/did-io#v0.9.x",
     "esm": "^3.2.25",
-    "whatwg-url": "^8.0.0"
+    "whatwg-url": "^8.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
@@ -38,7 +39,7 @@
     "crypto-ld": "digitalbazaar/crypto-ld#extract-key-pairs",
     "dirty-chai": "^2.0.1",
     "ed25519-key-pair": "digitalbazaar/ed25519-key-pair#initial",
-    "karma": "^5.0.4",
+    "karma": "^5.0.9",
     "karma-babel-preprocessor": "^8.0.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^3.1.0",
@@ -49,7 +50,7 @@
     "mocha": "^7.1.2",
     "nyc": "^15.0.1",
     "sinon": "^9.0.2",
-    "standard": "^14.3.3",
+    "standard": "^14.3.4",
     "webpack": "^4.43.0"
   },
   "main": "src/main.js",

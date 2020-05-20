@@ -3,6 +3,8 @@
 // import axios from 'axios' // todo: consider 'apisauce' instead
 import { DidDocument } from 'did-io'
 import { URL } from 'whatwg-url'
+import didContext from 'did-context'
+const DID_CONTEXT_URL = didContext.constants.DID_CONTEXT_URL
 
 const DEFAULT_KEY_MAP = {
   capabilityInvocation: 'ed25519',
@@ -13,10 +15,10 @@ const DEFAULT_KEY_MAP = {
 }
 
 export function didFromUrl ({ url } = {}) {
-  if(!url) {
+  if (!url) {
     throw new TypeError('Cannot convert url to did, missing url.')
   }
-  if(url.startsWith('http:')) {
+  if (url.startsWith('http:')) {
     throw new TypeError('did:web does not support non-HTTPS URLs.')
   }
 
@@ -38,17 +40,18 @@ export function didFromUrl ({ url } = {}) {
 }
 
 export function urlFromDid ({ did } = {}) {
-  if(!did) {
+  if (!did) {
     throw new TypeError('Cannot convert did to url, missing did.')
   }
-  if(!did.startsWith('did:web:')) {
+  if (!did.startsWith('did:web:')) {
     throw new TypeError(`DID Method not supported: "${did}".`)
   }
 
-  const [_did, _web, host, ...pathFragments ] = did.split(':')
+  // eslint-disable-next-line no-unused-vars
+  const [_did, _web, host, ...pathFragments] = did.split(':')
 
   let pathname = ''
-  if(pathFragments.length === 0) {
+  if (pathFragments.length === 0) {
     pathname = '/.well-known/did.json'
   } else {
     pathname = '/' + pathFragments.map(decodeURIComponent).join('/')
@@ -87,6 +90,8 @@ export class DidWebResolver {
    */
   async generate ({ id, url, keyMap = this.keyMap, cryptoLd = this.cryptoLd } = {}) {
     const didDocument = new DidDocument({ id: id || didFromUrl({ url }) })
+    didDocument['@context'] = [DID_CONTEXT_URL]
+
     const { didKeys } = await didDocument.initKeys({ cryptoLd, keyMap })
     return { didDocument, didKeys }
   }
