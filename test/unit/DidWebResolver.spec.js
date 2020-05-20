@@ -4,11 +4,11 @@ import { DidWebResolver, urlFromDid, didFromUrl } from '../../src'
 
 import { CryptoLD } from 'crypto-ld'
 import Ed25519KeyPair from 'ed25519-key-pair'
-const cryptoLd = new CryptoLD()
-cryptoLd.use(Ed25519KeyPair)
 
 import chai from 'chai'
 import dirtyChai from 'dirty-chai'
+const cryptoLd = new CryptoLD()
+cryptoLd.use(Ed25519KeyPair)
 chai.use(dirtyChai)
 chai.should()
 const { expect } = chai
@@ -31,7 +31,20 @@ describe('DidWebDriver', () => {
       const url = 'https://example.com'
       const { didDocument, didKeys } = await didWeb.generate({ url })
 
-      console.log(didDocument)
+      expect(didDocument).to.have.property('@context')
+      expect(didDocument.id).to.equal('did:web:example.com')
+      expect(didDocument.capabilityInvocation[0].type)
+        .to.equal('Ed25519VerificationKey2018')
+      expect(didDocument.authentication[0].type)
+        .to.equal('Ed25519VerificationKey2018')
+      expect(didDocument.assertionMethod[0].type)
+        .to.equal('Ed25519VerificationKey2018')
+      expect(didDocument.capabilityDelegation[0].type)
+        .to.equal('Ed25519VerificationKey2018')
+
+      for (const keyId in didKeys) {
+        expect(didKeys[keyId].type).to.equal('Ed25519VerificationKey2018')
+      }
     })
   })
 
