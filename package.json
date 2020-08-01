@@ -21,6 +21,7 @@
     "standard": "standard --fix"
   },
   "dependencies": {
+    "@digitalbazaar/http-client": "^1.0.0",
     "did-context": "^2.0.0",
     "did-io": "digitalbazaar/did-io#v0.9.0-rc1",
     "esm": "^3.2.25",
