@@ -1,6 +1,6 @@
 'use strict'
 
-// import axios from 'axios' // todo: consider 'apisauce' instead
+import {httpClient} from '@digitalbazaar/http-client'
 import { DidDocument } from 'did-io'
 import { URL } from 'whatwg-url'
 import didContext from 'did-context'
@@ -97,9 +97,39 @@ export class DidWebResolver {
 
   /**
    * Fetches a DID Document for a given DID.
-   * @param {string} did
    *
-   * @returns {Promise<DidDocument>}
+   * Usage:
+   * ```
+   * // In Node.js tests, use an agent to avoid self-signed certificate errors
+   * const agent = new https.agent({rejectUnauthorized: false});
+   * ```
+   *
+   * @param {string} [did]
+   * @param {string} [url]
+   * @param {https.Agent} [agent] Optional agent used to customize network
+   *   behavior in Node.js (such as `rejectUnauthorized: false`).
+   *
+   * @throws {Error}
+   *
+   * @returns {Promise<object>} Plain parsed JSON object of the DID Document.
    */
-  async get () {}
+  async get ({ did, url, agent }) {
+    url = url || urlFromDid({ did })
+    if (!url) {
+      throw new TypeError('A DID or a URL is required.')
+    }
+
+    let result
+    try {
+      result = await httpClient.get(url, {agent})
+    } catch(e) {
+      // status is HTTP status code
+      // data is JSON error from the server if available
+      const {data, status} = e
+      console.error(`Http ${status} error:`, data)
+      throw e
+    }
+
+    return result.data
+  }
 }
