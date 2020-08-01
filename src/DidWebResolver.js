@@ -7,11 +7,11 @@ import didContext from 'did-context'
 const DID_CONTEXT_URL = didContext.constants.DID_CONTEXT_URL
 
 const DEFAULT_KEY_MAP = {
-  capabilityInvocation: 'ed25519',
-  authentication: 'ed25519',
-  assertionMethod: 'ed25519',
-  capabilityDelegation: 'ed25519'
-  // keyAgreement: 'x25519'  // <- not yet supported
+  capabilityInvocation: 'Ed25519VerificationKey2018',
+  authentication: 'Ed25519VerificationKey2018',
+  assertionMethod: 'Ed25519VerificationKey2018',
+  capabilityDelegation: 'Ed25519VerificationKey2018'
+  // keyAgreement: 'X25519KeyAgreementKey2019'  // <- not yet supported
 }
 
 export function didFromUrl ({ url } = {}) {
@@ -62,8 +62,7 @@ export function urlFromDid ({ did } = {}) {
 
 export class DidWebResolver {
   constructor ({ cryptoLd, keyMap = DEFAULT_KEY_MAP } = {}) {
-    // did:web:...
-    this.method = 'web'
+    this.method = 'web' // did:web:...
     this.cryptoLd = cryptoLd
     this.keyMap = keyMap
   }
