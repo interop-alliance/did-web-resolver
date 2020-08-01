@@ -3,12 +3,12 @@
 import { DidWebResolver, urlFromDid, didFromUrl } from '../../src'
 
 import { CryptoLD } from 'crypto-ld'
-import Ed25519KeyPair from 'ed25519-key-pair'
+import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018'
 
 import chai from 'chai'
 import dirtyChai from 'dirty-chai'
 const cryptoLd = new CryptoLD()
-cryptoLd.use(Ed25519KeyPair)
+cryptoLd.use(Ed25519VerificationKey2018)
 chai.use(dirtyChai)
 chai.should()
 const { expect } = chai
