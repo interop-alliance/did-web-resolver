@@ -1,7 +1,7 @@
 # `did:web` Resolver Driver _(did-web-driver)_
 
-[![Build Status](https://travis-ci.org/interop-alliance/did-web-driver.svg?branch=master&style=flat-square)](https://travis-ci.org/interop-alliance/did-web-driver)
-[![NPM Version](https://img.shields.io/npm/v/did-web-driver.svg?style=flat-square)](https://npm.im/did-web-driver)
+[![Node.js CI](https://github.com/interop-alliance/did-web-resolver/workflows/Node.js%20CI/badge.svg)](https://github.com/interop-alliance/did-web-resolver/actions?query=workflow%3A%22Node.js+CI%22)
+[![NPM Version](https://img.shields.io/npm/v/interop/did-web-resolver)](https://www.npmjs.com/package/@interop/did-web-resolver)
 
 > A did:web method Decentralized Identifier (DID) resolver for the did-io library.
 
