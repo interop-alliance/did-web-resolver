@@ -3,7 +3,18 @@ name: Node.js CI
 on: [push]
 
 jobs:
+  add-hosts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Add test hosts to /etc/hosts
+        run: |
+          echo "127.0.0.1 nic.localhost" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 tim.localhost" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 nicola.localhost" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 ldnode.localhost" | sudo tee -a /etc/hosts
   test-node:
+    needs: [add-hosts]
     runs-on: ubuntu-latest
     strategy:
       matrix:
