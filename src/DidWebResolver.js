@@ -1,17 +1,17 @@
-'use strict'
-
-import {httpClient} from '@digitalbazaar/http-client'
-import { DidDocument } from 'did-io'
-import { URL } from 'whatwg-url'
+import { httpClient } from '@digitalbazaar/http-client'
+import * as didIo from '@digitalbazaar/did-io'
+import ed25519Context from 'ed25519-signature-2020-context'
+import x25519Context from 'x25519-key-agreement-2020-context'
 import didContext from 'did-context'
-const DID_CONTEXT_URL = didContext.constants.DID_CONTEXT_URL
+
+const { VERIFICATION_RELATIONSHIPS } = didIo
 
 const DEFAULT_KEY_MAP = {
-  capabilityInvocation: 'Ed25519VerificationKey2018',
-  authentication: 'Ed25519VerificationKey2018',
-  assertionMethod: 'Ed25519VerificationKey2018',
-  capabilityDelegation: 'Ed25519VerificationKey2018'
-  // keyAgreement: 'X25519KeyAgreementKey2019'  // <- not yet supported
+  capabilityInvocation: 'Ed25519VerificationKey2020',
+  authentication: 'Ed25519VerificationKey2020',
+  assertionMethod: 'Ed25519VerificationKey2020',
+  capabilityDelegation: 'Ed25519VerificationKey2020',
+  keyAgreement: 'X25519KeyAgreementKey2020'
 }
 
 export function didFromUrl ({ url } = {}) {
@@ -60,6 +60,68 @@ export function urlFromDid ({ did } = {}) {
   return 'https://' + decodeURIComponent(host) + pathname
 }
 
+/**
+ * Initializes the DID Document's keys/proof methods.
+ *
+ * @example
+ * didDocument.id = 'did:ex:123';
+ * const {didDocument, keyPairs} = await initKeys({
+ *   didDocument,
+ *   cryptoLd,
+ *   keyMap: {
+ *     capabilityInvocation: someExistingKey,
+ *     authentication: 'Ed25519VerificationKey2020',
+ *     assertionMethod: 'Ed25519VerificationKey2020',
+ *     keyAgreement: 'X25519KeyAgreementKey2019'
+ *   }
+ * });.
+ *
+ * @param {object} options - Options hashmap.
+ * @param {object} options.didDocument - DID Document.
+ * @typedef {object} CryptoLD
+ * @param {CryptoLD} [options.cryptoLd] - CryptoLD driver instance,
+ *   initialized with the key types this DID Document intends to support.
+ * @param {object} [options.keyMap] - Map of keys (or key types) by purpose.
+ *
+ * @returns {Promise<{didDocument: object, keyPairs: Map}>} Resolves with the
+ *   DID Document initialized with keys, as well as the map of the corresponding
+ *   key pairs (by key id).
+ */
+export async function initKeys ({ didDocument, cryptoLd, keyMap = {} } = {}) {
+  const doc = { ...didDocument }
+  if (!doc.id) {
+    throw new TypeError(
+      'DID Document "id" property is required to initialize keys.')
+  }
+
+  const keyPairs = new Map()
+
+  // Set the defaults for the created keys (if needed)
+  const options = { controller: doc.id }
+
+  for (const purpose in keyMap) {
+    if (!VERIFICATION_RELATIONSHIPS.has(purpose)) {
+      throw new Error(`Unsupported key purpose: "${purpose}".`)
+    }
+
+    let key
+    if (typeof keyMap[purpose] === 'string') {
+      if (!cryptoLd) {
+        throw new Error('Please provide an initialized CryptoLD instance.')
+      }
+      key = await cryptoLd.generate({ type: keyMap[purpose], ...options })
+    } else {
+      // An existing key has been provided
+      key = keyMap[purpose]
+    }
+
+    doc[purpose] = [key.export({ publicKey: true })]
+    keyPairs.set(key.id, key)
+  }
+
+  return { didDocument: doc, keyPairs }
+}
+
 export class DidWebResolver {
   constructor ({ cryptoLd, keyMap = DEFAULT_KEY_MAP } = {}) {
     this.method = 'web' // did:web:...
@@ -71,38 +133,62 @@ export class DidWebResolver {
    * Generates a new DID Document and initializes various authentication
    * and authorization proof purpose keys.
    *
-   * Usage:
-   * ```
+   * @example
    *   const url = 'https://example.com'
    *   const { didDocument, didKeys } = await didWeb.generate({url})
    *   didDocument.id
    *   // -> 'did:web:example.com'
-   * ```
+   *
    *
    * Either an `id` or a `url` is required:
    * @param [id] {string} - A did:web DID. If absent, will be converted from url
    * @param [url] {string}
    *
-   * @throws {Error}
+   * @param [keyMap=DEFAULT_KEY_MAP] {object} A hashmap of key types by purpose.
    *
-   * @returns {Promise<{didDocument: DidDocument, didKeys: object}>}
+   * @parma [cryptoLd] {object} CryptoLD instance with support for supported
+   *   crypto suites installed.
+   *
+   * @returns {Promise<{didDocument: object, keyPairs: Map,
+   *   methodFor: Function}>} Resolves with the generated DID Document, along
+   *   with the corresponding key pairs used to generate it (for storage in a
+   *   KMS).
    */
   async generate ({ id, url, keyMap = this.keyMap, cryptoLd = this.cryptoLd } = {}) {
-    const didDocument = new DidDocument({ id: id || didFromUrl({ url }) })
-    didDocument['@context'] = [DID_CONTEXT_URL]
+    const did = id || didFromUrl({ url })
 
-    const { didKeys } = await didDocument.initKeys({ cryptoLd, keyMap })
-    return { didDocument, didKeys }
+    // Compose the DID Document
+    let didDocument = {
+      '@context': [
+        didContext.constants.DID_CONTEXT_URL,
+        ed25519Context.constants.CONTEXT_URL,
+        x25519Context.constants.CONTEXT_URL
+      ],
+      id: did
+    }
+
+    const result = await initKeys({ didDocument, cryptoLd, keyMap })
+    const keyPairs = result.keyPairs
+    didDocument = result.didDocument
+
+    // Convenience function that returns the public/private key pair instance
+    // for a given purpose (authentication, assertionMethod, keyAgreement, etc).
+    const methodFor = ({ purpose }) => {
+      const { id: methodId } = didIo.findVerificationMethod({
+        doc: didDocument, purpose
+      })
+      return keyPairs.get(methodId)
+    }
+
+    return { didDocument, keyPairs, methodFor }
   }
 
   /**
    * Fetches a DID Document for a given DID.
    *
-   * Usage:
-   * ```
+   * @example
    * // In Node.js tests, use an agent to avoid self-signed certificate errors
    * const agent = new https.agent({rejectUnauthorized: false});
-   * ```
    *
    * @param {string} [did]
    * @param {string} [url]
@@ -121,11 +207,11 @@ export class DidWebResolver {
 
     let result
     try {
-      result = await httpClient.get(url, {agent})
-    } catch(e) {
+      result = await httpClient.get(url, { agent })
+    } catch (e) {
       // status is HTTP status code
       // data is JSON error from the server if available
-      const {data, status} = e
+      const { data, status } = e
       console.error(`Http ${status} error:`, data)
       throw e
     }

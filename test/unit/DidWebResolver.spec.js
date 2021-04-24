@@ -1,17 +1,20 @@
-'use strict'
+import chai from 'chai'
+import dirtyChai from 'dirty-chai'
 
 import { DidWebResolver, urlFromDid, didFromUrl } from '../../src'
 
+import { Ed25519VerificationKey2020 }
+  from '@digitalbazaar/ed25519-verification-key-2020'
+import { X25519KeyAgreementKey2020 }
+  from '@digitalbazaar/x25519-key-agreement-key-2020'
 import { CryptoLD } from 'crypto-ld'
-import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018'
-
-import chai from 'chai'
-import dirtyChai from 'dirty-chai'
-const cryptoLd = new CryptoLD()
-cryptoLd.use(Ed25519VerificationKey2018)
 chai.use(dirtyChai)
 chai.should()
 const { expect } = chai
+
+const cryptoLd = new CryptoLD()
+cryptoLd.use(Ed25519VerificationKey2020)
+cryptoLd.use(X25519KeyAgreementKey2020)
 
 describe('DidWebDriver', () => {
   describe('constructor', () => {
@@ -29,22 +32,32 @@ describe('DidWebDriver', () => {
 
     it('should generate using default key map', async () => {
       const url = 'https://example.com'
-      const { didDocument, didKeys } = await didWeb.generate({ url })
+      const { didDocument, keyPairs } = await didWeb.generate({ url })
 
       expect(didDocument).to.have.property('@context')
       expect(didDocument.id).to.equal('did:web:example.com')
       expect(didDocument.capabilityInvocation[0].type)
-        .to.equal('Ed25519VerificationKey2018')
+        .to.equal('Ed25519VerificationKey2020')
       expect(didDocument.authentication[0].type)
-        .to.equal('Ed25519VerificationKey2018')
+        .to.equal('Ed25519VerificationKey2020')
       expect(didDocument.assertionMethod[0].type)
-        .to.equal('Ed25519VerificationKey2018')
+        .to.equal('Ed25519VerificationKey2020')
       expect(didDocument.capabilityDelegation[0].type)
-        .to.equal('Ed25519VerificationKey2018')
+        .to.equal('Ed25519VerificationKey2020')
 
-      for (const keyId in didKeys) {
-        expect(didKeys[keyId].type).to.equal('Ed25519VerificationKey2018')
-      }
+      expect(keyPairs).to.exist()
+    })
+
+    it('should return methodFor convenience function', async () => {
+      const url = 'https://example.com'
+      const { methodFor } = await didWeb.generate({ url })
+
+      const keyAgreementKey = methodFor({ purpose: 'keyAgreement' })
+
+      expect(keyAgreementKey).to.have.property('type', 'X25519KeyAgreementKey2020')
+      expect(keyAgreementKey).to.have.property('controller', 'did:web:example.com')
+      expect(keyAgreementKey).to.have.property('publicKeyMultibase')
+      expect(keyAgreementKey).to.have.property('privateKeyMultibase')
     })
   })
 
