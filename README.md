@@ -1,4 +1,4 @@
-# `did:web` Resolver Driver _(did-web-driver)_
+# `did:web` Resolver _(did-web-resolver)_
 
 [![Node.js CI](https://github.com/interop-alliance/did-web-resolver/workflows/Node.js%20CI/badge.svg)](https://github.com/interop-alliance/did-web-resolver/actions?query=workflow%3A%22Node.js+CI%22)
 [![NPM Version](https://img.shields.io/npm/v/interop/did-web-resolver)](https://www.npmjs.com/package/@interop/did-web-resolver)
@@ -104,8 +104,8 @@ const { didDocument, keyPairs, methodFor } = await didWebDriver.generate()
 ## Install
 
 ```bash
-git clone https://github.com/interop-alliance/did-web-driver.git
-cd did-web-driver
+git clone https://github.com/interop-alliance/did-web-resolver.git
+cd did-web-resolver
 npm install
 ```
 
