@@ -97,6 +97,16 @@ describe('DidWebDriver', () => {
       expect(urlFromDid({ did: 'did:web:example.com:path:some%2Bsubpath' }))
         .to.equal('https://example.com/path/some+subpath')
     })
+
+    it('should preserve hash fragments for dids without paths', () => {
+      const url = urlFromDid({ did: 'did:web:localhost%3A8080#keyId' })
+      expect(url).to.equal('https://localhost:8080/.well-known/did.json#keyId')
+    })
+
+    it('should preserve hash fragments for dids with paths', () => {
+      const url = urlFromDid({ did: 'did:web:example.com:path:some%2Bsubpath#keyId' })
+      expect(url).to.equal('https://example.com/path/some+subpath#keyId')
+    })
   })
 
   describe('didFromUrl', () => {
