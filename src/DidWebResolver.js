@@ -47,8 +47,12 @@ export function urlFromDid ({ did } = {}) {
     throw new TypeError(`DID Method not supported: "${did}".`)
   }
 
+  const [ didUrl, hashFragment ] = did.split('#')
   // eslint-disable-next-line no-unused-vars
-  const [_did, _web, host, ...pathFragments] = did.split(':')
+  const [ didResource, query ] = didUrl.split('?')
+
+  // eslint-disable-next-line no-unused-vars
+  const [ _did, _web, host, ...pathFragments ] = didResource.split(':')
 
   let pathname = ''
   if (pathFragments.length === 0) {
@@ -57,7 +61,13 @@ export function urlFromDid ({ did } = {}) {
     pathname = '/' + pathFragments.map(decodeURIComponent).join('/')
   }
 
-  return 'https://' + decodeURIComponent(host) + pathname
+  const url = new URL(pathname, 'https://' + decodeURIComponent(host))
+  if (hashFragment) {
+    url.hash = hashFragment
+  }
+  // TODO: Not passing on the query part currently; reserved for DID URLs?
+
+  return url.toString()
 }
 
 /**
@@ -124,7 +134,7 @@ export async function initKeys ({ didDocument, cryptoLd, keyMap = {} } = {}) {
 
 export class DidWebResolver {
   constructor ({ cryptoLd, keyMap = DEFAULT_KEY_MAP } = {}) {
-    this.method = 'web' // did:web:...
+    this.method = 'web' // did:web:... (used for didIo resolver harness)
     this.cryptoLd = cryptoLd
     this.keyMap = keyMap
   }
@@ -190,29 +200,32 @@ export class DidWebResolver {
    * // In Node.js tests, use an agent to avoid self-signed certificate errors
    * const agent = new https.agent({rejectUnauthorized: false});
    *
-   * @param {string} [did]
+   * @param {string} [did] For example, 'did:web:example.com'
    * @param {string} [url]
    * @param {https.Agent} [agent] Optional agent used to customize network
    *   behavior in Node.js (such as `rejectUnauthorized: false`).
+   * @param {object} [logger=console] Logger object (with .log, .error, .warn,
+   *   etc methods).
    *
    * @throws {Error}
    *
    * @returns {Promise<object>} Plain parsed JSON object of the DID Document.
    */
-  async get ({ did, url, agent }) {
-    url = url || urlFromDid({ did })
-    if (!url) {
+  async get ({ did, url, agent, logger = console }) {
+    const didUrl = url || urlFromDid({ did })
+    if (!didUrl) {
       throw new TypeError('A DID or a URL is required.')
     }
 
     let result
     try {
-      result = await httpClient.get(url, { agent })
+      logger.info(`Fetching "${didUrl}" via http client.`)
+      result = await httpClient.get(didUrl, { agent })
     } catch (e) {
       // status is HTTP status code
       // data is JSON error from the server if available
       const { data, status } = e
-      console.error(`Http ${status} error:`, data)
+      logger.error(`Http ${status} error:`, data)
       throw e
     }
 
