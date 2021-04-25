@@ -47,12 +47,12 @@ export function urlFromDid ({ did } = {}) {
     throw new TypeError(`DID Method not supported: "${did}".`)
   }
 
-  const [ didUrl, hashFragment ] = did.split('#')
+  const [didUrl, hashFragment] = did.split('#')
   // eslint-disable-next-line no-unused-vars
-  const [ didResource, query ] = didUrl.split('?')
+  const [didResource, query] = didUrl.split('?')
 
   // eslint-disable-next-line no-unused-vars
-  const [ _did, _web, host, ...pathFragments ] = didResource.split(':')
+  const [_did, _web, host, ...pathFragments] = didResource.split(':')
 
   let pathname = ''
   if (pathFragments.length === 0) {
@@ -133,10 +133,17 @@ export async function initKeys ({ didDocument, cryptoLd, keyMap = {} } = {}) {
 }
 
 export class DidWebResolver {
-  constructor ({ cryptoLd, keyMap = DEFAULT_KEY_MAP } = {}) {
+  /**
+   * @param cryptoLd {CryptoLD}
+   * @param keyMap {object}
+   * @param [logger] {object} Logger object (with .log, .error, .warn,
+   *   etc methods).
+   */
+  constructor ({ cryptoLd, keyMap = DEFAULT_KEY_MAP, logger = console } = {}) {
     this.method = 'web' // did:web:... (used for didIo resolver harness)
     this.cryptoLd = cryptoLd
     this.keyMap = keyMap
+    this.logger = logger
   }
 
   /**
@@ -204,14 +211,14 @@ export class DidWebResolver {
    * @param {string} [url]
    * @param {https.Agent} [agent] Optional agent used to customize network
    *   behavior in Node.js (such as `rejectUnauthorized: false`).
-   * @param {object} [logger=console] Logger object (with .log, .error, .warn,
+   * @param {object} [logger] Logger object (with .log, .error, .warn,
    *   etc methods).
    *
    * @throws {Error}
    *
    * @returns {Promise<object>} Plain parsed JSON object of the DID Document.
    */
-  async get ({ did, url, agent, logger = console }) {
+  async get ({ did, url, agent, logger = this.logger }) {
     const didUrl = url || urlFromDid({ did })
     if (!didUrl) {
       throw new TypeError('A DID or a URL is required.')
