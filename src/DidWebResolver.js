@@ -238,4 +238,41 @@ export class DidWebResolver {
 
     return result.data
   }
+
+  /**
+   * Returns the public key (verification method) object for a given DID
+   * Document and purpose. Useful in conjunction with a `.get()` call.
+   *
+   * @example
+   * const didDocument = await didKeyDriver.get({did});
+   * const authKeyData = didDriver.publicMethodFor({
+   *   didDocument, purpose: 'authentication'
+   * });
+   * // You can then create a suite instance object to verify signatures etc.
+   * const authPublicKey = await cryptoLd.from(authKeyData);
+   * const {verify} = authPublicKey.verifier();
+   *
+   * @param {object} options - Options hashmap.
+   * @param {object} options.didDocument - DID Document (retrieved via a
+   *   `.get()` or from some other source).
+   * @param {string} options.purpose - Verification method purpose, such as
+   *   'authentication', 'assertionMethod', 'keyAgreement' and so on.
+   *
+   * @returns {object} Returns the public key object (obtained from the DID
+   *   Document), without a `@context`.
+   */
+  publicMethodFor ({ didDocument, purpose } = {}) {
+    if (!didDocument) {
+      throw new TypeError('The "didDocument" parameter is required.')
+    }
+    if (!purpose) {
+      throw new TypeError('The "purpose" parameter is required.')
+    }
+
+    const method = didIo.findVerificationMethod({ doc: didDocument, purpose })
+    if (!method) {
+      throw new Error(`No verification method found for purpose "${purpose}"`)
+    }
+    return method
+  }
 }
