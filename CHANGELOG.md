@@ -1,5 +1,11 @@
 # did-web-driver ChangeLog
 
+## 1.0.1 - 2021-04-25
+
+### Fixed
+- Fix handling of hash fragments by `urlFromDid()`.
+- Add logger to constructor.
+
 ## 1.0.0 - 2021-04-24
 
 ### Changed
