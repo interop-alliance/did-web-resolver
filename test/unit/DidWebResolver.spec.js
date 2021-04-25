@@ -23,6 +23,20 @@ describe('DidWebDriver', () => {
     })
   })
 
+  describe('publicMethodFor()', () => {
+    it('should fetch a public key object for a given purpose', async () => {
+      const didWeb = new DidWebResolver({ cryptoLd })
+      const url = 'https://example.com'
+      const { didDocument } = await didWeb.generate({ url })
+
+      const keyAgreementKey = didWeb.publicMethodFor({
+        didDocument, purpose: 'keyAgreement'
+      })
+
+      expect(keyAgreementKey.type).to.equal('X25519KeyAgreementKey2020')
+    })
+  })
+
   describe('generate()', () => {
     let didWeb
 
