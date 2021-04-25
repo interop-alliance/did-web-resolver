@@ -1,7 +1,7 @@
-# `did:web` Resolver _(did-web-resolver)_
+# `did:web` Resolver _(@interop/did-web-resolver)_
 
 [![Node.js CI](https://github.com/interop-alliance/did-web-resolver/workflows/Node.js%20CI/badge.svg)](https://github.com/interop-alliance/did-web-resolver/actions?query=workflow%3A%22Node.js+CI%22)
-[![NPM Version](https://img.shields.io/npm/v/interop/did-web-resolver)](https://www.npmjs.com/package/@interop/did-web-resolver)
+[![NPM Version](https://img.shields.io/npm/v/@interop/did-web-resolver.svg)](https://npm.im/@interop/did-web-resolver)
 
 > A did:web method Decentralized Identifier (DID) resolver for the did-io library.
 
