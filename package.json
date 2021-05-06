@@ -14,19 +14,39 @@
   "homepage": "https://github.com/interop-alliance/did-web-driver",
   "bugs": "https://github.com/interop-alliance/did-web-driver/issues",
   "scripts": {
+    "rollup": "rollup -c rollup.config.js",
+    "build": "npm run clear && npm run rollup && ./build-dist.sh",
+    "clear": "rimraf dist/ && mkdir dist",
+    "prepare": "npm run build",
+    "rebuild": "npm run clear && npm run build",
     "test": "npm run standard && npm run test-node",
     "test-node": "cross-env NODE_ENV=test mocha -r esm --preserve-symlinks -t 10000 test/**/*.spec.js",
     "test-karma": "karma start test/karma.conf.js",
     "nyc": "cross-env NODE_ENV=test nyc npm run test-node",
     "standard": "standard --fix"
   },
+  "files": [
+    "dist",
+    "src",
+    "rollup.config.js",
+    "build-dist.sh",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/esm/index.js"
+    }
+  },
   "dependencies": {
-    "@digitalbazaar/did-io": "^1.0.0",
-    "@digitalbazaar/http-client": "^1.1.0",
-    "did-context": "^3.0.1",
+    "@digitalbazaar/did-io": "digitalbazaar/did-io#noesm",
+    "@digitalbazaar/http-client": "digitalbazaar/http-client#noesm",
+    "did-context": "digitalbazaar/did-context#nofs",
     "ed25519-signature-2020-context": "^1.1.0",
-    "esm": "^3.2.25",
-    "x25519-key-agreement-2020-context": "^1.0.0"
+    "x25519-key-agreement-2020-context": "digitalbazaar/x25519-key-agreement-2020-context#nofs"
   },
   "devDependencies": {
     "@babel/core": "^7.13.16",
@@ -39,7 +59,8 @@
     "babel-loader": "^8.2.2",
     "chai": "^4.3.4",
     "cross-env": "^7.0.3",
-    "crypto-ld": "^5.1.0",
+    "crypto-ld": "^6.0.0",
+    "esm": "^3.2.25",
     "dirty-chai": "^2.0.1",
     "karma": "^6.3.2",
     "karma-babel-preprocessor": "^8.0.1",
@@ -53,9 +74,10 @@
     "nyc": "^15.1.0",
     "sinon": "^10.0.0",
     "standard": "^16.0.3",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.47.0",
     "webpack": "^5.35.1"
   },
-  "main": "src/main.js",
   "nyc": {
     "reporter": [
       "html",
