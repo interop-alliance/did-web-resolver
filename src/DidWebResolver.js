@@ -224,10 +224,13 @@ export class DidWebResolver {
       throw new TypeError('A DID or a URL is required.')
     }
 
-    let result
+    const [urlAuthority, keyIdFragment] = didUrl.split('#')
+
+    let didDocument
     try {
-      logger.info(`Fetching "${didUrl}" via http client.`)
-      result = await httpClient.get(didUrl, { agent })
+      logger.info(`Fetching "${urlAuthority}" via http client.`)
+      const result = await httpClient.get(urlAuthority, { agent })
+      didDocument = result.data
     } catch (e) {
       // status is HTTP status code
       // data is JSON error from the server if available
@@ -235,8 +238,23 @@ export class DidWebResolver {
       logger.error(`Http ${status} error:`, data)
       throw e
     }
+    if (didDocument && keyIdFragment) {
+      // resolve an individual key
+      // Keys are expected to have format: <did:web:...>#<keyIdFragment>
+      const didAuthority = didFromUrl({ url: urlAuthority })
+      const methodId = `${didAuthority}#${keyIdFragment}`
 
-    return result.data
+      const key = didIo.findVerificationMethod({ doc: didDocument, methodId })
+      if (!key) {
+        throw new Error(`Key id ${methodId} not found.`)
+      }
+
+      const keyPair = await this.cryptoLd.from(key)
+
+      return keyPair.export({ publicKey: true, includeContext: true })
+    }
+
+    return didDocument
   }
 
   /**
