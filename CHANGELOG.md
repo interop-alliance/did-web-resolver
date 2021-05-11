@@ -1,5 +1,12 @@
 # did-web-driver ChangeLog
 
+## 2.0.0 -
+
+### Changed
+- Use rollup for build-time transpile instead of esm.
+- Use "no ESM" branches for all other deps.
+- `.get()` now also resolves keys (to match other did-io drivers).
+
 ## 1.1.0 - 2021-04-25
 
 ### Added
