@@ -49,25 +49,31 @@ export function urlFromDid ({ did } = {}) {
 
   const [didUrl, hashFragment] = did.split('#')
   // eslint-disable-next-line no-unused-vars
-  const [didResource, query] = didUrl.split('?')
+  // const [didResource, query] = didUrl.split('?')
 
   // eslint-disable-next-line no-unused-vars
-  const [_did, _web, host, ...pathFragments] = didResource.split(':')
+  const [_did, _web, urlNoProtocol] = didUrl.split(':')
 
-  let pathname = ''
-  if (pathFragments.length === 0) {
-    pathname = '/.well-known/did.json'
+  let parsedUrl
+  try {
+    // URI-decode the url (in case it contained a port number,
+    // for example, `did:web:localhost%3A8080`
+    parsedUrl = new URL('https://' + decodeURIComponent(urlNoProtocol))
+  } catch (error) {
+    throw new TypeError(`Cannot construct url from did: "${did}".`)
+  }
+
+  if (!parsedUrl.pathname || parsedUrl.pathname === '/') {
+    parsedUrl.pathname = '/.well-known/did.json'
   } else {
-    pathname = '/' + pathFragments.map(decodeURIComponent).join('/')
+    const pathFragments = parsedUrl.pathname.split('/')
+    parsedUrl.pathname = pathFragments.map(decodeURIComponent).join('/')
   }
 
-  const url = new URL(pathname, 'https://' + decodeURIComponent(host))
   if (hashFragment) {
-    url.hash = hashFragment
+    parsedUrl.hash = hashFragment
   }
-  // TODO: Not passing on the query part currently; reserved for DID URLs?
-
-  return url.toString()
+  return parsedUrl.toString()
 }
 
 /**

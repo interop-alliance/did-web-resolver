@@ -108,7 +108,7 @@ describe('DidWebDriver', () => {
     })
 
     it('should url-decode path fragments', () => {
-      expect(urlFromDid({ did: 'did:web:example.com:path:some%2Bsubpath' }))
+      expect(urlFromDid({ did: 'did:web:example.com/path/some%2Bsubpath' }))
         .to.equal('https://example.com/path/some+subpath')
     })
 
@@ -118,7 +118,7 @@ describe('DidWebDriver', () => {
     })
 
     it('should preserve hash fragments for dids with paths', () => {
-      const url = urlFromDid({ did: 'did:web:example.com:path:some%2Bsubpath#keyId' })
+      const url = urlFromDid({ did: 'did:web:example.com/path/some%2Bsubpath#keyId' })
       expect(url).to.equal('https://example.com/path/some+subpath#keyId')
     })
   })
