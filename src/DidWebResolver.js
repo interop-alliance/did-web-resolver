@@ -176,7 +176,7 @@ export class DidWebResolver {
    * @param [cryptoLd] {object} CryptoLD instance with support for supported
    *   crypto suites installed.
    *
-   * @param [seed] {uint8Array} deterministic seed value from which to generate the key
+   * @param [seedMap] {object} A hashmap of deterministic seeds by purpose.
    *
    * @returns {Promise<{didDocument: object, keyPairs: Map,
    *   methodFor: Function}>} Resolves with the generated DID Document, along
