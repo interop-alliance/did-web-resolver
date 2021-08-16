@@ -127,7 +127,10 @@ export async function initKeys ({ didDocument, cryptoLd, keyMap = {}, seedMap = 
       if (!cryptoLd) {
         throw new Error('Please provide an initialized CryptoLD instance.')
       }
-      key = await cryptoLd.generate({ type: keyMap[purpose], ...(typeof seedMap[purpose] === 'object' && { seed: seedMap[purpose] }), ...options })
+
+      options.seed = seedMap[purpose]
+
+      key = await cryptoLd.generate({ type: keyMap[purpose], ...options })
     } else {
       // An existing key has been provided
       key = keyMap[purpose]
