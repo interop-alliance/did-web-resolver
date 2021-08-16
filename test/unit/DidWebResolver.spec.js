@@ -62,6 +62,40 @@ describe('DidWebDriver', () => {
       expect(keyPairs).to.exist()
     })
 
+    it('should generate using pre-existing seed', async () => {
+      const url = 'https://example.com'
+      const seed = new Uint8Array(32)
+      seed.fill(0x01)
+
+      const seedMap = {
+        authentication: seed
+      }
+
+      const didWeb = new DidWebResolver({ cryptoLd, seedMap })
+      const { didDocument, methodFor, keyPairs } = await didWeb.generate({ url })
+
+      expect(didDocument).to.have.property('@context')
+      expect(didDocument.id).to.equal('did:web:example.com')
+      expect(didDocument.capabilityInvocation[0].type)
+        .to.equal('Ed25519VerificationKey2020')
+      expect(didDocument.authentication[0].type)
+        .to.equal('Ed25519VerificationKey2020')
+      expect(didDocument.assertionMethod[0].type)
+        .to.equal('Ed25519VerificationKey2020')
+      expect(didDocument.capabilityDelegation[0].type)
+        .to.equal('Ed25519VerificationKey2020')
+
+      expect(keyPairs).to.exist()
+      expect(methodFor({ purpose: 'authentication' })).to.eql({
+        id: 'did:web:example.com#z6Mkon3Necd6NkkyfoGoHxid2znGc59LU3K7mubaRcFbLfLX',
+        controller: 'did:web:example.com',
+        revoked: undefined,
+        type: 'Ed25519VerificationKey2020',
+        publicKeyMultibase: 'zAKnL4NNf3DGWZJS6cPknBuEGnVsV4A4m5tgebLHaRSZ9',
+        privateKeyMultibase: 'z2AXDGYSE4f2sz7tvMMzyHvUfcoJmxudvdhBcmiUSo6iuCXagjUCKEQF21awZnUGxmwD4m9vGXuC3qieHXJQHAcT'
+      })
+    })
+
     it('should return methodFor convenience function', async () => {
       const url = 'https://example.com'
       const { methodFor } = await didWeb.generate({ url })

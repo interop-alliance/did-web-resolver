@@ -99,11 +99,13 @@ export function urlFromDid ({ did } = {}) {
  *   initialized with the key types this DID Document intends to support.
  * @param {object} [options.keyMap] - Map of keys (or key types) by purpose.
  *
+ * @param {object} [options.seedMap] - Map of seeds by purpose.
+ *
  * @returns {Promise<{didDocument: object, keyPairs: Map}>} Resolves with the
  *   DID Document initialized with keys, as well as the map of the corresponding
  *   key pairs (by key id).
  */
-export async function initKeys ({ didDocument, cryptoLd, keyMap = {} } = {}) {
+export async function initKeys ({ didDocument, cryptoLd, keyMap = {}, seedMap = {} } = {}) {
   const doc = { ...didDocument }
   if (!doc.id) {
     throw new TypeError(
@@ -125,7 +127,7 @@ export async function initKeys ({ didDocument, cryptoLd, keyMap = {} } = {}) {
       if (!cryptoLd) {
         throw new Error('Please provide an initialized CryptoLD instance.')
       }
-      key = await cryptoLd.generate({ type: keyMap[purpose], ...options })
+      key = await cryptoLd.generate({ type: keyMap[purpose], ...(typeof seedMap[purpose] === 'object' && { seed: seedMap[purpose] }), ...options })
     } else {
       // An existing key has been provided
       key = keyMap[purpose]
@@ -144,12 +146,14 @@ export class DidWebResolver {
    * @param keyMap {object}
    * @param [logger] {object} Logger object (with .log, .error, .warn,
    *   etc methods).
+   * @param [seedMap] {object}
    */
-  constructor ({ cryptoLd, keyMap = DEFAULT_KEY_MAP, logger = console } = {}) {
+  constructor ({ cryptoLd, keyMap = DEFAULT_KEY_MAP, logger = console, seedMap = {} } = {}) {
     this.method = 'web' // did:web:... (used for didIo resolver harness)
     this.cryptoLd = cryptoLd
     this.keyMap = keyMap
     this.logger = logger
+    this.seedMap = seedMap
   }
 
   /**
@@ -169,15 +173,17 @@ export class DidWebResolver {
    *
    * @param [keyMap=DEFAULT_KEY_MAP] {object} A hashmap of key types by purpose.
    *
-   * @parma [cryptoLd] {object} CryptoLD instance with support for supported
+   * @param [cryptoLd] {object} CryptoLD instance with support for supported
    *   crypto suites installed.
+   *
+   * @param [seed] {uint8Array} deterministic seed value from which to generate the key
    *
    * @returns {Promise<{didDocument: object, keyPairs: Map,
    *   methodFor: Function}>} Resolves with the generated DID Document, along
    *   with the corresponding key pairs used to generate it (for storage in a
    *   KMS).
    */
-  async generate ({ id, url, keyMap = this.keyMap, cryptoLd = this.cryptoLd } = {}) {
+  async generate ({ id, url, keyMap = this.keyMap, cryptoLd = this.cryptoLd, seedMap = this.seedMap } = {}) {
     const did = id || didFromUrl({ url })
 
     // Compose the DID Document
@@ -190,7 +196,7 @@ export class DidWebResolver {
       id: did
     }
 
-    const result = await initKeys({ didDocument, cryptoLd, keyMap })
+    const result = await initKeys({ didDocument, cryptoLd, keyMap, seedMap })
     const keyPairs = result.keyPairs
     didDocument = result.didDocument
 
