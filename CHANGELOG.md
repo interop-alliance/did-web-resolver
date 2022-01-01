@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 2.0.0 -
+## 2.0.0 - 2022-01-01
 
 ### Changed
 - Use rollup for build-time transpile instead of esm.
