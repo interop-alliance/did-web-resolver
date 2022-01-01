@@ -6,6 +6,9 @@
 - Use rollup for build-time transpile instead of esm.
 - Use "no ESM" branches for all other deps.
 - `.get()` now also resolves keys (to match other did-io drivers).
+- **BREAKING**: Update ed25519 and X25519 dependencies to latest. You will have
+  to re-generate your `did:web` DID documents for this version, as the
+  key serialization formats have changed.
 
 ## 1.1.0 - 2021-04-25
 
