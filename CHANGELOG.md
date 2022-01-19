@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 2.2.1 -
+## 2.1.1 - 2022-01-19
 
 ### Changed
 - Fix package.json's `exports` section (add `package.json`).
