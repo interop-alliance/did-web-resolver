@@ -4,9 +4,9 @@ import dirtyChai from 'dirty-chai'
 import { DidWebResolver, urlFromDid, didFromUrl } from '../../src'
 
 import { Ed25519VerificationKey2020 }
-  from '@digitalbazaar/ed25519-verification-key-2020'
+  from '@digitalcredentials/ed25519-verification-key-2020'
 import { X25519KeyAgreementKey2020 }
-  from '@digitalbazaar/x25519-key-agreement-key-2020'
+  from '@digitalcredentials/x25519-key-agreement-key-2020'
 import { CryptoLD } from 'crypto-ld'
 chai.use(dirtyChai)
 chai.should()

@@ -42,11 +42,11 @@
     }
   },
   "dependencies": {
-    "@digitalbazaar/did-io": "digitalbazaar/did-io#noesm",
-    "@digitalbazaar/http-client": "digitalbazaar/http-client#noesm",
-    "did-context": "digitalbazaar/did-context#nofs",
+    "@digitalcredentials/did-io": "^1.0.2",
+    "@digitalcredentials/http-client": "^1.2.2",
+    "did-context": "^3.1.1",
     "ed25519-signature-2020-context": "^1.1.0",
-    "x25519-key-agreement-2020-context": "digitalbazaar/x25519-key-agreement-2020-context#nofs"
+    "x25519-key-agreement-2020-context": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.16.7",
@@ -54,8 +54,8 @@
     "@babel/plugin-transform-runtime": "^7.16.7",
     "@babel/preset-env": "^7.16.7",
     "@babel/runtime": "^7.16.7",
-    "@digitalbazaar/ed25519-verification-key-2020": "^3.2.0",
-    "@digitalbazaar/x25519-key-agreement-key-2020": "^2.0.0",
+    "@digitalcredentials/ed25519-verification-key-2020": "^3.2.2",
+    "@digitalcredentials/x25519-key-agreement-key-2020": "^2.0.2",
     "babel-loader": "^8.2.3",
     "chai": "^4.3.4",
     "cross-env": "^7.0.3",

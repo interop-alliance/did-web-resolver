@@ -1,5 +1,5 @@
-import { httpClient } from '@digitalbazaar/http-client'
-import * as didIo from '@digitalbazaar/did-io'
+import { httpClient } from '@digitalcredentials/http-client'
+import * as didIo from '@digitalcredentials/did-io'
 import ed25519Context from 'ed25519-signature-2020-context'
 import x25519Context from 'x25519-key-agreement-2020-context'
 import didContext from 'did-context'
