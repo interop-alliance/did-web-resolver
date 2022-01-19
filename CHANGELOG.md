@@ -1,6 +1,11 @@
 # did-web-driver ChangeLog
 
-## 2.1.0 -
+## 2.2.1 -
+
+### Changed
+- Fix package.json's `exports` section (add `package.json`).
+
+## 2.1.0 - 2022-01-19
 
 ### Changed
 - Update dependencies to `@digitalbazaar` npm published versions, remove

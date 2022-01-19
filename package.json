@@ -39,7 +39,8 @@
     ".": {
       "require": "./dist/index.js",
       "import": "./dist/esm/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "dependencies": {
     "@digitalcredentials/did-io": "^1.0.2",
