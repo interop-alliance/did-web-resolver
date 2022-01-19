@@ -21,7 +21,7 @@ TBD
 ## Background
 
 A `did:web` method driver for use with in-browser and server-side on Node.js
-with the [`did-io`](https://github.com/digitalbazaar/did-io) resolver library. 
+with the [`did-io`](https://github.com/digitalcredentials/did-io) resolver library. 
 
 Draft spec (W3C CCG Work Item):
 
@@ -37,9 +37,9 @@ Other implementations:
 
 ```js
 import { Ed25519VerificationKey2020 }
-  from '@digitalbazaar/ed25519-verification-key-2020'
+  from '@digitalcredentials/ed25519-verification-key-2020'
 import { X25519KeyAgreementKey2020 }
-  from '@digitalbazaar/x25519-key-agreement-key-2020'
+  from '@digitalcredentials/x25519-key-agreement-key-2020'
 import { CryptoLD } from 'crypto-ld'
 
 import * as didWeb from '@interop/did-web-resolver'
@@ -51,7 +51,7 @@ cryptoLd.use(X25519KeyAgreementKey2020)
 const didWebDriver = didWeb.driver({ cryptoLd })
 
 // Optionally use it with the CachedResolver from did-io
-import {CachedResolver} from '@digitalbazaar/did-io';
+import {CachedResolver} from '@digitalcredentials/did-io';
 const resolver = new CachedResolver()
 resolver.use(didWebDriver)
 ```
