@@ -1,5 +1,11 @@
 # did-web-driver ChangeLog
 
+## 2.1.0 -
+
+### Changed
+- Update dependencies to `@digitalbazaar` npm published versions, remove
+  github-based dependencies.
+
 ## 2.0.0 - 2022-01-01
 
 ### Changed
