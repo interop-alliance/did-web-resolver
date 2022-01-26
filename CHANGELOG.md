@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 2.2.0 -
+## 2.2.0 - 2022-01-26
 
 ### Added
 - Add ability to `.generate()` from a secret key seed.
