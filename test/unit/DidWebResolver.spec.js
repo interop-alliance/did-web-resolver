@@ -73,6 +73,21 @@ describe('DidWebDriver', () => {
       expect(keyAgreementKey).to.have.property('publicKeyMultibase')
       expect(keyAgreementKey).to.have.property('privateKeyMultibase')
     })
+
+    it('should generate from seed', async () => {
+      const seed = 'z1AhV1bADy7RepJ64mvH7Kk7htFNGc7EA1WA5nGzLSTWc6o'
+      const url = 'https://example.com'
+      const { didDocument, methodFor } = await didWeb.generate({ url, seed })
+
+      expect(didDocument).to.have.property('id', 'did:web:example.com')
+
+      const assertionKey = methodFor({ purpose: 'assertionMethod' })
+      expect(assertionKey).to.have.property('id', 'did:web:example.com#z6MkmDMjfkjs9XPCN1LfoQQRHz1mJ8PEdiVYC66XKhj3wGyB')
+      expect(assertionKey).to.have.property('type', 'Ed25519VerificationKey2020')
+      expect(assertionKey).to.have.property('controller', 'did:web:example.com')
+      expect(assertionKey).to.have.property('publicKeyMultibase', 'z6MkmDMjfkjs9XPCN1LfoQQRHz1mJ8PEdiVYC66XKhj3wGyB')
+      expect(assertionKey).to.have.property('privateKeyMultibase')
+    })
   })
 
   describe('urlFromDid()', () => {

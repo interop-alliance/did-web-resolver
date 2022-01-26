@@ -58,9 +58,40 @@ resolver.use(didWebDriver)
 
 ### Generating a new DID
 
+#### Generating from seed
+
+If you have a deterministic secret seed (created with [`did-cli`](https://github.com/digitalcredentials/did-cli),
+for example) and would like to generate a `did:web` document from it:
+
+```js
+const url = 'https://example.com'
+const seed = 'z1AhV1bADy7RepJ64mvH7Kk7htFNGc7EA1WA5nGzLSTWc6o'
+
+const { didDocument, keyPairs, methodFor } = await didWebDriver.generate({ url, seed })
+// didDocument
+{
+  '@context': [
+    'https://www.w3.org/ns/did/v1',
+    'https://w3id.org/security/suites/ed25519-2020/v1',
+    'https://w3id.org/security/suites/x25519-2020/v1'
+  ],
+  id: 'did:web:example.com',
+  assertionMethod: [{
+    id: 'did:web:example.com#z6MkmDMjfkjs9XPCN1LfoQQRHz1mJ8PEdiVYC66XKhj3wGyB',
+    type: 'Ed25519VerificationKey2020',
+    controller: 'did:web:example.com',
+    publicKeyMultibase: 'z6MkmDMjfkjs9XPCN1LfoQQRHz1mJ8PEdiVYC66XKhj3wGyB'
+  }]
+}
+```
+
+#### Generating new random keys
+
+Invoking `generate()` by itself will create new keypairs for each proof purpose.
+
 ```js
 const { didDocument, keyPairs, methodFor } = await didWebDriver.generate()
-
+// didDocument
 {
   '@context': [
     'https://www.w3.org/ns/did/v1',
