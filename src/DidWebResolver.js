@@ -3,6 +3,7 @@ import * as didIo from '@digitalcredentials/did-io'
 import ed25519Context from 'ed25519-signature-2020-context'
 import x25519Context from 'x25519-key-agreement-2020-context'
 import didContext from 'did-context'
+import { decodeSecretKeySeed } from '@digitalcredentials/bnid'
 
 const { VERIFICATION_RELATIONSHIPS } = didIo
 
@@ -103,7 +104,7 @@ export function urlFromDid ({ did } = {}) {
  *   DID Document initialized with keys, as well as the map of the corresponding
  *   key pairs (by key id).
  */
-export async function initKeys ({ didDocument, cryptoLd, keyMap = {} } = {}) {
+export async function initKeys ({ didDocument, cryptoLd, keyMap } = {}) {
   const doc = { ...didDocument }
   if (!doc.id) {
     throw new TypeError(
@@ -167,7 +168,7 @@ export class DidWebResolver {
    * @param [id] {string} - A did:web DID. If absent, will be converted from url
    * @param [url] {string}
    *
-   * @param [keyMap=DEFAULT_KEY_MAP] {object} A hashmap of key types by purpose.
+   * @param [keyMap] {object} A hashmap of key types by purpose.
    *
    * @parma [cryptoLd] {object} CryptoLD instance with support for supported
    *   crypto suites installed.
@@ -177,8 +178,26 @@ export class DidWebResolver {
    *   with the corresponding key pairs used to generate it (for storage in a
    *   KMS).
    */
-  async generate ({ id, url, keyMap = this.keyMap, cryptoLd = this.cryptoLd } = {}) {
+  async generate ({ id, url, seed, keyMap, cryptoLd = this.cryptoLd } = {}) {
+    if (!id && !url) {
+      throw new TypeError('A "url" or an "id" parameter is required.')
+    }
+    if (seed && keyMap) {
+      throw new TypeError(
+        'Either a "seed" or a "keyMap" param must be provided, but not both.'
+      )
+    }
+
     const did = id || didFromUrl({ url })
+
+    if (seed) {
+      const keyPair = await _keyPairFromSecretSeed({
+        seed, controller: did, cryptoLd
+      })
+      keyMap = { assertionMethod: keyPair }
+    } else {
+      keyMap = keyMap || this.keyMap
+    }
 
     // Compose the DID Document
     let didDocument = {
@@ -299,4 +318,28 @@ export class DidWebResolver {
     }
     return method
   }
+}
+
+/**
+ * @param options {object}
+ * @param options.seed {string|Uint8Array}
+ * @param controller {string}
+ * @param cryptoLd {object}
+ *
+ * @return {Promise<LDKeyPair>}
+ */
+async function _keyPairFromSecretSeed ({ seed, controller, cryptoLd } = {}) {
+  let seedBytes
+  if (typeof seed === 'string') {
+    // Currently only supports base58 multibase / identity multihash encoding.
+    if (!seed.startsWith('z1A')) {
+      throw new TypeError('"seed" parameter must be a multibase/multihash encoded string, or a Uint8Array.')
+    }
+    seedBytes = decodeSecretKeySeed({ secretKeySeed: seed })
+  } else {
+    seedBytes = new Uint8Array(seed)
+  }
+  return cryptoLd.generate({
+    controller, seed: seedBytes, type: 'Ed25519VerificationKey2020'
+  })
 }
