@@ -1,5 +1,10 @@
 # did-web-driver ChangeLog
 
+## 2.2.1 - 2022-02-04
+
+### Changed
+- Fix URL error on React Native (use external `whatwg-url` package).
+
 ## 2.2.0 - 2022-01-26
 
 ### Added
