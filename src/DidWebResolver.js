@@ -4,6 +4,7 @@ import ed25519Context from 'ed25519-signature-2020-context'
 import x25519Context from 'x25519-key-agreement-2020-context'
 import didContext from 'did-context'
 import { decodeSecretKeySeed } from '@digitalcredentials/bnid'
+import { URL } from 'whatwg-url'
 
 const { VERIFICATION_RELATIONSHIPS } = didIo
 
