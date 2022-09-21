@@ -112,6 +112,30 @@ describe('DidWebDriver', () => {
         .to.equal('DID Method not supported: "did:example:1234".')
     })
 
+    it('should error on pattern did:web:domain/path/subpath', () => {
+      const invalidDids = [
+        'did:web:example.com/path',
+        'did:web:example.com/path/subpath',
+        'did:web:example.com/path/subpath?query=string',
+        'did:web:example.com/path/subpath#fragment',
+        'did:web:example.com/:user:alice'
+      ]
+      invalidDids.forEach((did) => {
+        let error
+        try {
+          urlFromDid({ did })
+        } catch (e) {
+          error = e
+        }
+        if (error) {
+          expect(error.message)
+            .to.contain('domain-name cannot contain a path.')
+        } else {
+          expect.fail('should have thrown error for did: ' + did)
+        }
+      })
+    })
+
     it('should convert first id fragment to pathname plus default path', () => {
       expect(urlFromDid({ did: 'did:web:example.com' }))
         .to.equal('https://example.com/.well-known/did.json')
@@ -122,19 +146,31 @@ describe('DidWebDriver', () => {
         .to.equal('https://localhost:8080/.well-known/did.json')
     })
 
-    it('should url-decode path fragments', () => {
-      expect(urlFromDid({ did: 'did:web:example.com/path/some%2Bsubpath' }))
-        .to.equal('https://example.com/path/some+subpath')
-    })
-
     it('should preserve hash fragments for dids without paths', () => {
       const url = urlFromDid({ did: 'did:web:localhost%3A8080#keyId' })
       expect(url).to.equal('https://localhost:8080/.well-known/did.json#keyId')
     })
 
-    it('should preserve hash fragments for dids with paths', () => {
-      const url = urlFromDid({ did: 'did:web:example.com/path/some%2Bsubpath#keyId' })
-      expect(url).to.equal('https://example.com/path/some+subpath#keyId')
+    // See: https://w3c-ccg.github.io/did-method-web/#example-creating-the-did-with-optional-path
+    it('should work with optional path', () => {
+      const url = urlFromDid({ did: 'did:web:w3c-ccg.github.io:user:alice' })
+      expect(url).to.equal('https://w3c-ccg.github.io/user/alice/did.json')
+    })
+
+    // See: https://w3c-ccg.github.io/did-method-web/#example-creating-the-did-with-optional-path-and-port
+    it('should work with optional path and port', () => {
+      const url = urlFromDid({ did: 'did:web:example.com%3A3000:user:alice' })
+      expect(url).to.equal('https://example.com:3000/user/alice/did.json')
+    })
+
+    it('should preserve hash fragments for dids with optional path', () => {
+      const url = urlFromDid({ did: 'did:web:w3c-ccg.github.io:user:alice#keyId' })
+      expect(url).to.equal('https://w3c-ccg.github.io/user/alice/did.json#keyId')
+    })
+
+    it('should preserve hash fragments for dids with optional path and port', () => {
+      const url = urlFromDid({ did: 'did:web:example.com%3A3000:user:alice#keyId' })
+      expect(url).to.equal('https://example.com:3000/user/alice/did.json#keyId')
     })
   })
 
