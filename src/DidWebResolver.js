@@ -54,7 +54,11 @@ export function urlFromDid ({ did } = {}) {
   // const [didResource, query] = didUrl.split('?')
 
   // eslint-disable-next-line no-unused-vars
-  const [_did, _web, urlNoProtocol] = didUrl.split(':')
+  const [_did, _web, urlNoProtocol, ...pathFragments] = didUrl.split(':')
+
+  if (urlNoProtocol.includes('/')) {
+    throw new TypeError(`Cannot construct url from did: "${did}". domain-name cannot contain a path.`)
+  }
 
   let parsedUrl
   try {
@@ -65,11 +69,10 @@ export function urlFromDid ({ did } = {}) {
     throw new TypeError(`Cannot construct url from did: "${did}".`)
   }
 
-  if (!parsedUrl.pathname || parsedUrl.pathname === '/') {
+  if (pathFragments.length === 0) {
     parsedUrl.pathname = '/.well-known/did.json'
   } else {
-    const pathFragments = parsedUrl.pathname.split('/')
-    parsedUrl.pathname = pathFragments.map(decodeURIComponent).join('/')
+    parsedUrl.pathname = pathFragments.map(decodeURIComponent).join('/') + '/did.json'
   }
 
   if (hashFragment) {
