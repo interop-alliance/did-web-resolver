@@ -224,7 +224,7 @@ describe('DidWebDriver', () => {
 
     it('should encode path / separators as :', () => {
       expect(didFromUrl({ url: 'https://example.com/path/subpath/did.json' }))
-        .to.equal('did:web:example.com:path:subpath:did.json')
+        .to.equal('did:web:example.com:path:subpath')
     })
 
     it('should drop the default /.well-known/did.json pathname', () => {

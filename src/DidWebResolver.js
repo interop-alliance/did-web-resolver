@@ -31,10 +31,21 @@ export function didFromUrl ({ url } = {}) {
     throw new TypeError(`Invalid url: "${url}".`)
   }
 
-  const { host, pathname } = parsedUrl
-
+  let { host, pathname } = parsedUrl
   let pathComponent = ''
-  if (pathname && pathname !== '/' && pathname !== '/.well-known/did.json') {
+
+  const didJsonSuffix = '/did.json'
+  const wellKnownSuffix = '/.well-known'
+
+  if (pathname && pathname.endsWith(didJsonSuffix)) {
+    pathname = pathname.substring(0, pathname.length - didJsonSuffix.length)
+  }
+
+  if (pathname && pathname.endsWith(wellKnownSuffix)) {
+    pathname = pathname.substring(0, pathname.length - wellKnownSuffix.length)
+  }
+
+  if (pathname && pathname !== '/') {
     pathComponent = pathname.split('/').map(encodeURIComponent).join(':')
   }
 
