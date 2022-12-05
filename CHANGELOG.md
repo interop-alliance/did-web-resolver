@@ -1,5 +1,15 @@
 # did-web-driver ChangeLog
 
+## 3.0.1 - 2022-12-05
+
+### Changed
+- **BREAKING**: FIx `urlFromDid` logic to handle path segments (see PR [pr #19](https://github.com/interop-alliance/did-web-resolver/pull/19)).
+
+## 3.0.0 - 2022-09-22
+
+### Changed
+- **BREAKING**: Fix `didFromUrl` implementation (see [issue #20](https://github.com/interop-alliance/did-web-resolver/issues/20)).
+
 ## 2.2.1 - 2022-02-04
 
 ### Changed
