@@ -43,12 +43,12 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@digitalcredentials/bnid": "^2.1.1",
+    "@digitalbazaar/http-client": "digitalcredentials/http-client#react-native",
+    "@digitalcredentials/bnid": "^3.0.1",
     "@digitalcredentials/did-io": "^1.0.2",
-    "@digitalcredentials/http-client": "^1.2.2",
     "did-context": "^3.1.1",
     "ed25519-signature-2020-context": "^1.1.0",
-    "whatwg-url": "^11.0.0",
+    "whatwg-url": "^14.0.0",
     "x25519-key-agreement-2020-context": "^1.0.0"
   },
   "devDependencies": {
