@@ -1,5 +1,13 @@
 # did-web-driver ChangeLog
 
+## 4.0.0 -
+Note: API and usage should remain the same.
+
+### Changed
+- **BREAKING**: Convert to Typescript.
+- **BREAKING**: Switch back to Digital Bazaar's `http-client` fork.
+- **BREAKING**: Use DCC `bnid` v3 (which uses base-x instead of base58-universal).
+
 ## 3.0.1 - 2022-12-05
 
 ### Changed
