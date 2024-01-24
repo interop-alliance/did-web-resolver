@@ -19,8 +19,7 @@
     "lint": "ts-standard --fix --project tsconfig.spec.json",
     "prepare": "npm run build",
     "rebuild": "npm run clear && npm run build",
-    "test": "npm run lint && npm run test-node && npm run test-karma",
-    "test-karma": "karma start karma.conf.cjs",
+    "test": "npm run lint && npm run test-node",
     "test-node": "cross-env NODE_ENV=test TS_NODE_PROJECT=tsconfig.spec.json TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register --project tsconfig.spec.json 'test/*.ts'"
   },
   "files": [
@@ -29,7 +28,7 @@
     "README.md",
     "LICENSE"
   ],
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "module": "dist/esm/index.js",
   "browser": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -56,21 +55,12 @@
     "chai": "^4.3.7",
     "cross-env": "^7.0.3",
     "crypto-ld": "^6.0.0",
-    "dirty-chai": "^2.0.1",
     "eslint": "^8.46.0",
-    "karma": "^6.4.2",
-    "karma-chai": "^0.1.0",
-    "karma-chrome-launcher": "^3.2.0",
-    "karma-mocha": "^2.0.1",
-    "karma-mocha-reporter": "^2.2.5",
-    "karma-sourcemap-loader": "^0.4.0",
-    "karma-typescript": "^5.5.4",
     "mocha": "^10.2.0",
     "rimraf": "^5.0.1",
     "ts-node": "^10.9.1",
     "ts-standard": "^12.0.2",
-    "typescript": "5.2.2",
-    "webpack": "^5.89.0"
+    "typescript": "5.2.2"
   },
   "publishConfig": {
     "access": "public"
