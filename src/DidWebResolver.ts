@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import { httpClient } from '@digitalbazaar/http-client'
 import * as didIo from '@digitalcredentials/did-io'
-import ed25519Context from 'ed25519-signature-2020-context'
-import x25519Context from 'x25519-key-agreement-2020-context'
-import didContext from 'did-context'
+import * as ed25519Context from 'ed25519-signature-2020-context'
+import * as x25519Context from 'x25519-key-agreement-2020-context'
+import * as didContext from 'did-context'
 import { decodeSecretKeySeed } from '@digitalcredentials/bnid'
 import { URL } from 'whatwg-url'
 
@@ -16,7 +17,7 @@ const DEFAULT_KEY_MAP = {
   keyAgreement: 'X25519KeyAgreementKey2020'
 }
 
-export function didFromUrl ({ url } = {}) {
+export function didFromUrl ({ url }: { url?: string } = {}): string {
   if (!url) {
     throw new TypeError('Cannot convert url to did, missing url.')
   }
@@ -37,11 +38,11 @@ export function didFromUrl ({ url } = {}) {
   const didJsonSuffix = '/did.json'
   const wellKnownSuffix = '/.well-known'
 
-  if (pathname && pathname.endsWith(didJsonSuffix)) {
+  if (pathname?.endsWith(didJsonSuffix)) {
     pathname = pathname.substring(0, pathname.length - didJsonSuffix.length)
   }
 
-  if (pathname && pathname.endsWith(wellKnownSuffix)) {
+  if (pathname?.endsWith(wellKnownSuffix)) {
     pathname = pathname.substring(0, pathname.length - wellKnownSuffix.length)
   }
 
@@ -52,19 +53,16 @@ export function didFromUrl ({ url } = {}) {
   return 'did:web:' + encodeURIComponent(host) + pathComponent
 }
 
-export function urlFromDid ({ did } = {}) {
-  if (!did) {
-    throw new TypeError('Cannot convert did to url, missing did.')
-  }
-  if (!did.startsWith('did:web:')) {
-    throw new TypeError(`DID Method not supported: "${did}".`)
+export function urlFromDid ({ did }: { did: string | undefined }): string {
+  if (!did?.startsWith('did:web:')) {
+    throw new TypeError(`DID Method not supported: "${did ?? ''}".`)
   }
 
   const [didUrl, hashFragment] = did.split('#')
   // eslint-disable-next-line no-unused-vars
   // const [didResource, query] = didUrl.split('?')
 
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_did, _web, urlNoProtocol, ...pathFragments] = didUrl.split(':')
 
   if (urlNoProtocol.includes('/')) {
@@ -119,8 +117,11 @@ export function urlFromDid ({ did } = {}) {
  *   DID Document initialized with keys, as well as the map of the corresponding
  *   key pairs (by key id).
  */
-export async function initKeys ({ didDocument, cryptoLd, keyMap } = {}) {
-  const doc = { ...didDocument }
+export async function initKeys (
+  { didDocument, cryptoLd, keyMap }:
+  { didDocument?: object, cryptoLd?: any, keyMap?: any } = {}
+): Promise<{ didDocument: object, keyPairs: Map<string, any> }> {
+  const doc: any = { ...didDocument }
   if (!doc.id) {
     throw new TypeError(
       'DID Document "id" property is required to initialize keys.')
@@ -155,13 +156,19 @@ export async function initKeys ({ didDocument, cryptoLd, keyMap } = {}) {
 }
 
 export class DidWebResolver {
+  public cryptoLd: any
+  public keyMap: object
+  public method: string
+  public logger: any
+
   /**
    * @param cryptoLd {CryptoLD}
    * @param keyMap {object}
    * @param [logger] {object} Logger object (with .log, .error, .warn,
    *   etc methods).
    */
-  constructor ({ cryptoLd, keyMap = DEFAULT_KEY_MAP, logger = console } = {}) {
+  constructor ({ cryptoLd, keyMap = DEFAULT_KEY_MAP, logger = console }:
+  { cryptoLd?: any, keyMap?: object, logger?: any } = {}) {
     this.method = 'web' // did:web:... (used for didIo resolver harness)
     this.cryptoLd = cryptoLd
     this.keyMap = keyMap
@@ -182,18 +189,23 @@ export class DidWebResolver {
    * Either an `id` or a `url` is required:
    * @param [id] {string} - A did:web DID. If absent, will be converted from url
    * @param [url] {string}
+   * @param [seed] {string|Uint8Array}
    *
    * @param [keyMap] {object} A hashmap of key types by purpose.
    *
+   * @param cryptoLd
    * @parma [cryptoLd] {object} CryptoLD instance with support for supported
    *   crypto suites installed.
    *
-   * @returns {Promise<{didDocument: object, keyPairs: Map,
+   * @returns {Promise<{didDocument: object, keyPairs: object,
    *   methodFor: Function}>} Resolves with the generated DID Document, along
    *   with the corresponding key pairs used to generate it (for storage in a
    *   KMS).
    */
-  async generate ({ id, url, seed, keyMap, cryptoLd = this.cryptoLd } = {}) {
+  async generate (
+    { id, url, seed, keyMap, cryptoLd = this.cryptoLd }:
+    { id?: string, url?: string, seed?: string | Uint8Array, keyMap?: any, cryptoLd?: any } = {}):
+    Promise<{ didDocument: any, keyPairs: object, methodFor: Function }> {
     if (!id && !url) {
       throw new TypeError('A "url" or an "id" parameter is required.')
     }
@@ -203,7 +215,7 @@ export class DidWebResolver {
       )
     }
 
-    const did = id || didFromUrl({ url })
+    const did = id ?? didFromUrl({ url })
 
     if (seed) {
       const keyPair = await _keyPairFromSecretSeed({
@@ -224,13 +236,13 @@ export class DidWebResolver {
       id: did
     }
 
-    const result = await initKeys({ didDocument, cryptoLd, keyMap })
+    const result: any = await initKeys({ didDocument, cryptoLd, keyMap })
     const keyPairs = result.keyPairs
     didDocument = result.didDocument
 
     // Convenience function that returns the public/private key pair instance
     // for a given purpose (authentication, assertionMethod, keyAgreement, etc).
-    const methodFor = ({ purpose }) => {
+    const methodFor = ({ purpose }: { purpose: string }): any => {
       const { id: methodId } = didIo.findVerificationMethod({
         doc: didDocument, purpose
       })
@@ -258,8 +270,8 @@ export class DidWebResolver {
    *
    * @returns {Promise<object>} Plain parsed JSON object of the DID Document.
    */
-  async get ({ did, url, agent, logger = this.logger }) {
-    const didUrl = url || urlFromDid({ did })
+  async get ({ did, url, agent, logger = this.logger }: { did?: string | undefined, url?: string | undefined, agent?: any, logger?: any }): Promise<object> {
+    const didUrl = url ?? urlFromDid({ did })
     if (!didUrl) {
       throw new TypeError('A DID or a URL is required.')
     }
@@ -271,11 +283,12 @@ export class DidWebResolver {
       logger.info(`Fetching "${urlAuthority}" via http client.`)
       const result = await httpClient.get(urlAuthority, { agent })
       didDocument = result.data
-    } catch (e) {
+    } catch (e: any) {
       // status is HTTP status code
       // data is JSON error from the server if available
       const { data, status } = e
-      logger.error(`Http ${status} error:`, data)
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      logger.error(`Http ${status ?? ''} error:`, data)
       throw e
     }
     if (didDocument && keyIdFragment) {
@@ -319,14 +332,7 @@ export class DidWebResolver {
    * @returns {object} Returns the public key object (obtained from the DID
    *   Document), without a `@context`.
    */
-  publicMethodFor ({ didDocument, purpose } = {}) {
-    if (!didDocument) {
-      throw new TypeError('The "didDocument" parameter is required.')
-    }
-    if (!purpose) {
-      throw new TypeError('The "purpose" parameter is required.')
-    }
-
+  publicMethodFor ({ didDocument, purpose }: { didDocument: any, purpose: string }): any {
     const method = didIo.findVerificationMethod({ doc: didDocument, purpose })
     if (!method) {
       throw new Error(`No verification method found for purpose "${purpose}"`)
@@ -343,7 +349,7 @@ export class DidWebResolver {
  *
  * @return {Promise<LDKeyPair>}
  */
-async function _keyPairFromSecretSeed ({ seed, controller, cryptoLd } = {}) {
+async function _keyPairFromSecretSeed ({ seed, controller, cryptoLd }: { seed: string | Uint8Array, controller?: string, cryptoLd?: any }): Promise<any> {
   let seedBytes
   if (typeof seed === 'string') {
     // Currently only supports base58 multibase / identity multihash encoding.
