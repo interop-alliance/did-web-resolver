@@ -14,34 +14,25 @@
   "homepage": "https://github.com/interop-alliance/did-web-driver",
   "bugs": "https://github.com/interop-alliance/did-web-driver/issues",
   "scripts": {
-    "rollup": "rollup -c rollup.config.js",
-    "build": "npm run clear && npm run rollup && ./build-dist.sh",
-    "clear": "rimraf dist/ && mkdir dist",
+    "build": "npm run clear && tsc -d && tsc -p tsconfig.esm.json",
+    "clear": "rimraf dist/*",
+    "lint": "ts-standard --fix --project tsconfig.spec.json",
     "prepare": "npm run build",
     "rebuild": "npm run clear && npm run build",
-    "test": "npm run standard && npm run test-node",
-    "test-node": "cross-env NODE_ENV=test mocha -r esm --preserve-symlinks -t 10000 test/**/*.spec.js",
-    "test-karma": "karma start test/karma.conf.js",
-    "nyc": "cross-env NODE_ENV=test nyc npm run test-node",
-    "standard": "standard --fix"
+    "test": "npm run lint && npm run test-node && npm run test-karma",
+    "test-karma": "karma start karma.conf.cjs",
+    "test-node": "cross-env NODE_ENV=test TS_NODE_PROJECT=tsconfig.spec.json TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register --project tsconfig.spec.json 'test/*.ts'"
   },
   "files": [
     "dist",
     "src",
-    "rollup.config.js",
-    "build-dist.sh",
     "README.md",
     "LICENSE"
   ],
   "main": "dist/index.js",
   "module": "dist/esm/index.js",
-  "exports": {
-    ".": {
-      "require": "./dist/index.js",
-      "import": "./dist/esm/index.js"
-    },
-    "./package.json": "./package.json"
-  },
+  "browser": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
   "dependencies": {
     "@digitalbazaar/http-client": "digitalcredentials/http-client#react-native",
     "@digitalcredentials/bnid": "^3.0.1",
@@ -51,55 +42,62 @@
     "whatwg-url": "^14.0.0",
     "x25519-key-agreement-2020-context": "^1.0.0"
   },
+  "resolutions": {
+    "@typescript-eslint/typescript-estree": "^6.1.6"
+  },
   "devDependencies": {
-    "@babel/core": "^7.16.7",
-    "@babel/plugin-transform-modules-commonjs": "^7.16.7",
-    "@babel/plugin-transform-runtime": "^7.16.7",
-    "@babel/preset-env": "^7.16.7",
-    "@babel/runtime": "^7.16.7",
     "@digitalcredentials/ed25519-verification-key-2020": "^3.2.2",
     "@digitalcredentials/x25519-key-agreement-key-2020": "^2.0.2",
-    "babel-loader": "^8.2.3",
-    "chai": "^4.3.4",
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.4.6",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "chai": "^4.3.7",
     "cross-env": "^7.0.3",
     "crypto-ld": "^6.0.0",
     "dirty-chai": "^2.0.1",
-    "esm": "^3.2.25",
-    "karma": "^6.3.9",
-    "karma-babel-preprocessor": "^8.0.1",
+    "eslint": "^8.46.0",
+    "karma": "^6.4.2",
     "karma-chai": "^0.1.0",
-    "karma-chrome-launcher": "^3.1.0",
+    "karma-chrome-launcher": "^3.2.0",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
-    "karma-sourcemap-loader": "^0.3.8",
-    "karma-webpack": "^5.0.0",
-    "mocha": "^8.4.0",
-    "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
-    "rollup": "^2.62.0",
-    "sinon": "^12.0.1",
-    "standard": "^16.0.4",
-    "webpack": "^5.65.0"
+    "karma-sourcemap-loader": "^0.4.0",
+    "karma-typescript": "^5.5.4",
+    "mocha": "^10.2.0",
+    "rimraf": "^5.0.1",
+    "ts-node": "^10.9.1",
+    "ts-standard": "^12.0.2",
+    "typescript": "5.2.2",
+    "webpack": "^5.89.0"
   },
-  "nyc": {
-    "reporter": [
-      "html",
-      "text-summary"
+  "publishConfig": {
+    "access": "public"
+  },
+  "mocha": {
+    "require": "ts-node/register",
+    "extension": [
+      "ts"
     ],
-    "cache": true
+    "spec": "test/**/*.ts"
   },
-  "standard": {
+  "ts-standard": {
+    "ignore": [
+      "dist"
+    ],
     "globals": [
-      "after",
-      "afterEach",
-      "before",
-      "beforeEach",
-      "describe",
       "it",
-      "require"
+      "describe",
+      "beforeEach"
     ]
   },
   "engines": {
-    "node": ">=12.0"
+    "node": ">=18.0"
+  },
+  "standard": {
+    "globals": [
+      "it"
+    ]
   }
 }
