@@ -1,5 +1,10 @@
 # did-web-driver ChangeLog
 
+## 4.0.1 -
+
+### Changed
+- Update to use published `@digitalbazaar/http-client` package v4.1.0.
+
 ## 4.0.0 - 2024-01-23
 Note: API and usage should remain the same.
 
