@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import { httpClient } from '@digitalbazaar/http-client'
+import { httpClient } from '@digitalcredentials/http-client'
 import * as didIo from '@digitalcredentials/did-io'
 import * as ed25519Context from 'ed25519-signature-2020-context'
 import * as x25519Context from 'x25519-key-agreement-2020-context'
