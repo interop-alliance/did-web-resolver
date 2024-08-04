@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 5.0.0 -
+## 5.0.0 - 2024-08-04
 
 ### Changed
 - **BREAKING**: Switch to DCC `http-client` fork, v5.0
