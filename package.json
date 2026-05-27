@@ -39,7 +39,6 @@
     "@interop/http-client": "^1.0.3",
     "did-context": "^3.1.1",
     "ed25519-signature-2020-context": "^1.1.0",
-    "whatwg-url": "^14.0.0",
     "x25519-key-agreement-2020-context": "^1.0.0"
   },
   "devDependencies": {
@@ -76,8 +75,8 @@
     "node": ">=24.0"
   },
   "author": {
-    "name": "Dmitri Zagidulin",
-    "url": "https://github.com/dmitrizagidulin/"
+    "name": "Interop Alliance",
+    "url": "https://github.com/interop-alliance/"
   },
   "license": "MIT",
   "repository": {
