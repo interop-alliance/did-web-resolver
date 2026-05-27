@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import { httpClient } from '@digitalcredentials/http-client'
-import * as didIo from '@digitalcredentials/did-io'
+import { httpClient } from '@interop/http-client'
+import * as didIo from '@interop/did-io'
 import * as ed25519Context from 'ed25519-signature-2020-context'
 import * as x25519Context from 'x25519-key-agreement-2020-context'
 import * as didContext from 'did-context'
@@ -28,11 +27,12 @@ export function didFromUrl ({ url }: { url?: string } = {}): string {
   let parsedUrl
   try {
     parsedUrl = new URL(url)
-  } catch (error) {
-    throw new TypeError(`Invalid url: "${url}".`)
+  } catch (cause) {
+    throw new TypeError(`Invalid url: "${url}".`, { cause })
   }
 
-  let { host, pathname } = parsedUrl
+  const { host } = parsedUrl
+  let { pathname } = parsedUrl
   let pathComponent = ''
 
   const didJsonSuffix = '/did.json'
@@ -58,12 +58,9 @@ export function urlFromDid ({ did }: { did: string | undefined }): string {
     throw new TypeError(`DID Method not supported: "${did ?? ''}".`)
   }
 
-  const [didUrl, hashFragment] = did.split('#')
-  // eslint-disable-next-line no-unused-vars
-  // const [didResource, query] = didUrl.split('?')
+  const [didUrl = '', hashFragment] = did.split('#')
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_did, _web, urlNoProtocol, ...pathFragments] = didUrl.split(':')
+  const [_did, _web, urlNoProtocol = '', ...pathFragments] = didUrl.split(':')
 
   if (urlNoProtocol.includes('/')) {
     throw new TypeError(`Cannot construct url from did: "${did}". domain-name cannot contain a path.`)
@@ -74,8 +71,8 @@ export function urlFromDid ({ did }: { did: string | undefined }): string {
     // URI-decode the url (in case it contained a port number,
     // for example, `did:web:localhost%3A8080`
     parsedUrl = new URL('https://' + decodeURIComponent(urlNoProtocol))
-  } catch (error) {
-    throw new TypeError(`Cannot construct url from did: "${did}".`)
+  } catch (cause) {
+    throw new TypeError(`Cannot construct url from did: "${did}".`, { cause })
   }
 
   if (pathFragments.length === 0) {
@@ -205,7 +202,7 @@ export class DidWebResolver {
   async generate (
     { id, url, seed, keyMap, cryptoLd = this.cryptoLd }:
     { id?: string, url?: string, seed?: string | Uint8Array, keyMap?: any, cryptoLd?: any } = {}):
-    Promise<{ didDocument: any, keyPairs: object, methodFor: Function }> {
+    Promise<{ didDocument: any, keyPairs: object, methodFor: (options: { purpose: string }) => any }> {
     if (!id && !url) {
       throw new TypeError('A "url" or an "id" parameter is required.')
     }
@@ -243,10 +240,10 @@ export class DidWebResolver {
     // Convenience function that returns the public/private key pair instance
     // for a given purpose (authentication, assertionMethod, keyAgreement, etc).
     const methodFor = ({ purpose }: { purpose: string }): any => {
-      const { id: methodId } = didIo.findVerificationMethod({
-        doc: didDocument, purpose
+      const method: any = didIo.findVerificationMethod({
+        doc: didDocument as any, purpose
       })
-      return keyPairs.get(methodId)
+      return keyPairs.get(method?.id)
     }
 
     return { didDocument, keyPairs, methodFor }
@@ -276,9 +273,9 @@ export class DidWebResolver {
       throw new TypeError('A DID or a URL is required.')
     }
 
-    const [urlAuthority, keyIdFragment] = didUrl.split('#')
+    const [urlAuthority = '', keyIdFragment] = didUrl.split('#')
 
-    let didDocument
+    let didDocument: any
     try {
       logger.info(`Fetching "${urlAuthority}" via http client.`)
       const result = await httpClient.get(urlAuthority, { agent })
@@ -287,7 +284,6 @@ export class DidWebResolver {
       // status is HTTP status code
       // data is JSON error from the server if available
       const { data, status } = e
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       logger.error(`Http ${status ?? ''} error:`, data)
       throw e
     }
@@ -297,7 +293,7 @@ export class DidWebResolver {
       const didAuthority = didFromUrl({ url: urlAuthority })
       const methodId = `${didAuthority}#${keyIdFragment}`
 
-      const key = didIo.findVerificationMethod({ doc: didDocument, methodId })
+      const key = didIo.findVerificationMethod({ doc: didDocument as any, methodId })
       if (!key) {
         throw new Error(`Key id ${methodId} not found.`)
       }

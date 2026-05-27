@@ -1,0 +1,4 @@
+minimumReleaseAgeExclude:
+  - '@interop/did-io@2.0.1'
+  - '@interop/ed25519-verification-key@6.2.0'
+  - '@interop/lru-memoize@4.0.2'

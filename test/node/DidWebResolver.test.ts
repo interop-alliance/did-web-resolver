@@ -1,16 +1,14 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import { assert } from 'chai'
+import { describe, it, beforeEach, assert } from 'vitest'
 
-import { DidWebResolver, urlFromDid, didFromUrl } from '../src'
+import { DidWebResolver, urlFromDid, didFromUrl } from '../../src/index.js'
 
-import { Ed25519VerificationKey2020 }
-  from '@digitalcredentials/ed25519-verification-key-2020'
+import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { X25519KeyAgreementKey2020 }
   from '@digitalcredentials/x25519-key-agreement-key-2020'
 import { CryptoLD } from 'crypto-ld'
 
 const cryptoLd = new CryptoLD()
-cryptoLd.use(Ed25519VerificationKey2020)
+cryptoLd.use(Ed25519VerificationKey)
 cryptoLd.use(X25519KeyAgreementKey2020)
 
 describe('DidWebDriver', () => {
@@ -47,10 +45,10 @@ describe('DidWebDriver', () => {
 
       assert.property(didDocument, '@context')
       assert.equal(didDocument.id, 'did:web:example.com')
-      assert.equal(didDocument.capabilityInvocation[0].type, 'Ed25519VerificationKey2020')
-      assert.equal(didDocument.authentication[0].type, 'Ed25519VerificationKey2020')
-      assert.equal(didDocument.assertionMethod[0].type, 'Ed25519VerificationKey2020')
-      assert.equal(didDocument.capabilityDelegation[0].type, 'Ed25519VerificationKey2020')
+      assert.equal(didDocument.capabilityInvocation[0].type, 'Multikey')
+      assert.equal(didDocument.authentication[0].type, 'Multikey')
+      assert.equal(didDocument.assertionMethod[0].type, 'Multikey')
+      assert.equal(didDocument.capabilityDelegation[0].type, 'Multikey')
 
       assert(keyPairs)
     })
