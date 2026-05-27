@@ -153,6 +153,19 @@ cd did-web-resolver
 pnpm install
 ```
 
+### React Native
+
+This library uses the global WHATWG `URL` API, which is available natively in
+Node.js and browsers. React Native's built-in `URL` is not spec-compliant (in
+particular it does not support property setters such as `url.pathname = ...`,
+which this library relies on). React Native consumers must install
+[`react-native-url-polyfill`](https://www.npmjs.com/package/react-native-url-polyfill)
+and import it before using this library:
+
+```js
+import 'react-native-url-polyfill/auto'
+```
+
 ## Contribute
 
 * Coding Style: [Prettier](https://prettier.io/) + [ESLint](https://eslint.org/)
