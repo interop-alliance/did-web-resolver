@@ -1,6 +1,6 @@
 # `did:web` Resolver _(@interop/did-web-resolver)_
 
-[![Node.js CI](https://github.com/interop-alliance/did-web-resolver/workflows/Node.js%20CI/badge.svg)](https://github.com/interop-alliance/did-web-resolver/actions?query=workflow%3A%22Node.js+CI%22)
+[![CI](https://github.com/interop-alliance/did-web-resolver/workflows/CI/badge.svg)](https://github.com/interop-alliance/did-web-resolver/actions?query=workflow%3A%22CI%22)
 [![NPM Version](https://img.shields.io/npm/v/@interop/did-web-resolver.svg)](https://npm.im/@interop/did-web-resolver)
 
 > A did:web method Decentralized Identifier (DID) resolver for the did-io library.
@@ -36,8 +36,7 @@ Other implementations:
 ### Initializing
 
 ```js
-import { Ed25519VerificationKey2020 }
-  from '@digitalcredentials/ed25519-verification-key-2020'
+import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { X25519KeyAgreementKey2020 }
   from '@digitalcredentials/x25519-key-agreement-key-2020'
 import { CryptoLD } from 'crypto-ld'
@@ -45,16 +44,20 @@ import { CryptoLD } from 'crypto-ld'
 import * as didWeb from '@interop/did-web-resolver'
 
 const cryptoLd = new CryptoLD()
-cryptoLd.use(Ed25519VerificationKey2020)
+cryptoLd.use(Ed25519VerificationKey)
 cryptoLd.use(X25519KeyAgreementKey2020)
 
 const didWebDriver = didWeb.driver({ cryptoLd })
 
 // Optionally use it with the CachedResolver from did-io
-import {CachedResolver} from '@digitalcredentials/did-io';
+import { CachedResolver } from '@interop/did-io'
 const resolver = new CachedResolver()
 resolver.use(didWebDriver)
 ```
+
+> **Note:** Ed25519 verification methods are now serialized in
+> [Multikey](https://www.w3.org/TR/cid-1.0/#Multikey) format (`type: 'Multikey'`),
+> via `@interop/ed25519-verification-key`.
 
 ### Generating a new DID
 
@@ -78,7 +81,7 @@ const { didDocument, keyPairs, methodFor } = await didWebDriver.generate({ url, 
   id: 'did:web:example.com',
   assertionMethod: [{
     id: 'did:web:example.com#z6MkmDMjfkjs9XPCN1LfoQQRHz1mJ8PEdiVYC66XKhj3wGyB',
-    type: 'Ed25519VerificationKey2020',
+    type: 'Multikey',
     controller: 'did:web:example.com',
     publicKeyMultibase: 'z6MkmDMjfkjs9XPCN1LfoQQRHz1mJ8PEdiVYC66XKhj3wGyB'
   }]
@@ -101,25 +104,25 @@ const { didDocument, keyPairs, methodFor } = await didWebDriver.generate()
   id: 'did:web:example.com',
   capabilityInvocation: [{
     id: 'did:web:example.com#z6MkqUiWi2o5V5oDEVzqszpkDhzeJ2o9Z4zVyTWeASqgrgti',
-    type: 'Ed25519VerificationKey2020',
+    type: 'Multikey',
     controller: 'did:web:example.com',
     publicKeyMultibase: 'zC2TU7nYe9YJk81A9CRruNcSeUTXJ9Bk9HSbiLAsfwU7L'
   }],
   authentication: [{
     id: 'did:web:example.com#z6MksjNYAxjiTrhPFx9Ljk3SVowEtFXhFqLdsMKJHV4KrcDT',
-    type: 'Ed25519VerificationKey2020',
+    type: 'Multikey',
     controller: 'did:web:example.com',
     publicKeyMultibase: 'zEH7VaiVH8KCv9TJe4B5beiPF4gFqqx6HBLQNTD6JwPS5'
   }],
   assertionMethod: [{
     id: 'did:web:example.com#z6MkiyYa5mG4moiHrmXQea8bNvdEWRWi3KuouHqoiknGf7xV',
-    type: 'Ed25519VerificationKey2020',
+    type: 'Multikey',
     controller: 'did:web:example.com',
     publicKeyMultibase: 'z5XHXVX1dSGDpkGghy1AkXq5EgrErdSfTDGvstUpFjuB7'
   }],
   capabilityDelegation: [{
     id: 'did:web:example.com#z6MknmeMZEXLhS6g2p6YPHkQG4PkNsJev652CqnsArPm3dZa',
-    type: 'Ed25519VerificationKey2020',
+    type: 'Multikey',
     controller: 'did:web:example.com',
     publicKeyMultibase: 'z9KPJxzGuMtcCvKFqhinZQxqkZJ2oWCpfWpswLaRk8QnC'
   }],
@@ -134,15 +137,25 @@ const { didDocument, keyPairs, methodFor } = await didWebDriver.generate()
 
 ## Install
 
+- Node.js 24+ is recommended.
+
+To install via PNPM:
+
+```bash
+pnpm install @interop/did-web-resolver
+```
+
+To install locally (for development):
+
 ```bash
 git clone https://github.com/interop-alliance/did-web-resolver.git
 cd did-web-resolver
-npm install
+pnpm install
 ```
 
 ## Contribute
 
-* Coding Style: [Standard.js](https://standardjs.com/)
+* Coding Style: [Prettier](https://prettier.io/) + [ESLint](https://eslint.org/)
 * Docs: JSDoc
 * Readme: [standard-readme](https://github.com/RichardLitt/standard-readme)
 

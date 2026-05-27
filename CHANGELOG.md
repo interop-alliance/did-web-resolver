@@ -1,5 +1,22 @@
 # did-web-driver ChangeLog
 
+## 6.0.0 - 2026-05-27
+
+### Changed
+- **BREAKING**: Switch to `@interop/http-client` (TypeScript) from the DCC fork.
+- **BREAKING**: Switch to `@interop/did-io` (TypeScript) from the DCC fork.
+- **BREAKING**: Update to `@digitalcredentials/bnid` v5 (TypeScript).
+- **BREAKING**: Generated Ed25519 verification methods now serialize in Multikey
+  format (`type: 'Multikey'`), via `@interop/ed25519-verification-key`. You will
+  have to re-generate `did:web` DID documents that relied on the previous
+  `Ed25519VerificationKey2020` serialization.
+- **BREAKING**: Require Node.js 24+.
+
+### Toolchain
+- Migrate to the `@interop/isomorphic-lib-template` infrastructure: `pnpm`,
+  ESM-only build via `tsc`, Vitest (Node) + Playwright (browser) tests, and
+  flat-config ESLint + Prettier.
+
 ## 5.0.0 - 2024-08-04
 
 ### Changed
