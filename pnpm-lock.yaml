@@ -20,12 +20,6 @@ importers:
       did-context:
         specifier: ^3.1.1
         version: 3.1.1
-      ed25519-signature-2020-context:
-        specifier: ^1.1.0
-        version: 1.1.0
-      x25519-key-agreement-2020-context:
-        specifier: ^1.0.0
-        version: 1.0.0
     devDependencies:
       '@digitalcredentials/x25519-key-agreement-key-2020':
         specifier: ^2.0.2
@@ -45,9 +39,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.1.7
         version: 4.1.7(vitest@4.1.7)
-      crypto-ld:
-        specifier: ^6.0.0
-        version: 6.0.0
       eslint:
         specifier: ^10.4.0
         version: 10.4.0
@@ -789,9 +780,6 @@ packages:
 
   did-context@3.1.1:
     resolution: {integrity: sha512-iFpszgSxc7d1kNBJWC+PAzNTpe5LPalzsIunTMIpbG3O37Q7Zi7u4iIaedaM7UhziBhT+Agr9DyvAiXSUyfepQ==}
-
-  ed25519-signature-2020-context@1.1.0:
-    resolution: {integrity: sha512-dBGSmoUIK6h2vadDctrDnhhTO01PR2hJk0mRNEfrRDPCjaIwrfy4J+eziEQ9Q1m8By4f/CSRgKM1h53ydKfdNg==}
 
   ed2curve@0.3.0:
     resolution: {integrity: sha512-8w2fmmq3hv9rCrcI7g9hms2pMunQr1JINfcjwR9tAyZqhtyaMN991lF/ZfHfr5tzZQ8c7y7aBgZbjfbd0fjFwQ==}
@@ -1832,9 +1820,6 @@ packages:
       utf-8-validate:
         optional: true
 
-  x25519-key-agreement-2020-context@1.0.0:
-    resolution: {integrity: sha512-zblYd8oSg6hNAD+fA9X7ek1hJQRircl3jVlEVCaBTNN9Mv9b4G32uJvRZFMQEMmda8iaTtYo9i2dRMdXX8pjpA==}
-
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
@@ -2604,8 +2589,6 @@ snapshots:
   detect-libc@2.1.2: {}
 
   did-context@3.1.1: {}
-
-  ed25519-signature-2020-context@1.1.0: {}
 
   ed2curve@0.3.0:
     dependencies:
@@ -3648,8 +3631,6 @@ snapshots:
       strip-ansi: 6.0.1
 
   ws@7.5.11: {}
-
-  x25519-key-agreement-2020-context@1.0.0: {}
 
   y18n@5.0.8: {}
 

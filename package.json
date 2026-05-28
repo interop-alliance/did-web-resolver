@@ -37,9 +37,7 @@
     "@digitalcredentials/bnid": "^5.0.0",
     "@interop/did-io": "^2.0.1",
     "@interop/http-client": "^1.0.3",
-    "did-context": "^3.1.1",
-    "ed25519-signature-2020-context": "^1.1.0",
-    "x25519-key-agreement-2020-context": "^1.0.0"
+    "did-context": "^3.1.1"
   },
   "devDependencies": {
     "@digitalcredentials/x25519-key-agreement-key-2020": "^2.0.2",
@@ -48,7 +46,6 @@
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
     "@vitest/coverage-v8": "^4.1.7",
-    "crypto-ld": "^6.0.0",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.6.0",

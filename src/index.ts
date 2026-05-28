@@ -1,7 +1,14 @@
-import { DidWebResolver, didFromUrl, urlFromDid } from './DidWebResolver.js'
+import {
+  DidWebResolver,
+  didFromUrl,
+  getNode,
+  urlFromDid
+} from './DidWebResolver.js'
 
-const driver = (options: { cryptoLd?: any, keyMap?: object | undefined, logger?: any } | undefined): DidWebResolver => {
+const driver = (
+  options: { allowList?: string[], fetchOptions?: any, logger?: any } = {}
+): DidWebResolver => {
   return new DidWebResolver(options)
 }
 
-export { driver, DidWebResolver, didFromUrl, urlFromDid }
+export { driver, DidWebResolver, didFromUrl, getNode, urlFromDid }

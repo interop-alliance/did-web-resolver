@@ -1,5 +1,2 @@
-declare module 'ed25519-signature-2020-context'
-declare module 'x25519-key-agreement-2020-context'
 declare module 'did-context'
 declare module '@digitalcredentials/x25519-key-agreement-key-2020'
-declare module 'crypto-ld'
