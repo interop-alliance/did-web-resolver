@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 6.0.0 - 2026-05-27
+## 6.0.0 -
 
 ### Changed
 - **BREAKING**: Switch to `@interop/http-client` (TypeScript) from the DCC fork.
@@ -11,6 +11,7 @@
   have to re-generate `did:web` DID documents that relied on the previous
   `Ed25519VerificationKey2020` serialization.
 - **BREAKING**: Require Node.js 24+.
+- Added various security checks from `@digitalbazaar/did-method-web`
 
 ### Toolchain
 - Migrate to the `@interop/isomorphic-lib-template` infrastructure: `pnpm`,
