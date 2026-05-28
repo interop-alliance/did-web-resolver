@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 6.0.0 -
+## 6.0.0 - 2026-05-27
 
 ### Changed
 - **BREAKING**: Switch to `@interop/http-client` (TypeScript) from the DCC fork.
