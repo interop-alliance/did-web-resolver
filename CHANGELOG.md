@@ -1,5 +1,26 @@
 # did-web-driver ChangeLog
 
+## 6.1.0 - TBD
+
+### Changed
+- Replace local `any` types in the `DidWebResolver` API with the shared types
+  exported by `@interop/data-integrity-core` (`AbstractKeyPair`, `IDidDocument`,
+  `IKeyPair`, `IPublicKey`), aligning the driver's parameter and return types
+  with `@interop/did-method-key`.
+- The key-suite registry (`_allowedKeyTypes`) is now typed as
+  `Map<string, RegisteredKeyType>`, and `use()` accepts a typed `KeyPairClass`
+  / `FromMultibase`.
+- `DidWebResolver` now formally `implements DidMethodDriver` from
+  `@interop/did-io` (requires `@interop/did-io` >= 4.0.1). `fromKeyPair()`,
+  `generate()`, and `publicKeyToDidDoc()` now accept plain key descriptions
+  (`AbstractKeyPair | IKeyPair`) in addition to live key pair instances.
+- `addVerificationMethod()` is now `async` and rebuilds plain key descriptions
+  into live instances via the registered suites; it is the single point where
+  caller-supplied keys are normalized, so `fromKeyPair()` and
+  `publicKeyToDidDoc()` no longer convert keys themselves.
+- Export the `FromMultibase` and `KeyPairClass` types from the package entry
+  point, so consumers can type their `use()` registrations.
+
 ## 6.0.0 - 2026-05-27
 
 ### Changed

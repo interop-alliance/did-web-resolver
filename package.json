@@ -35,14 +35,15 @@
   "sideEffects": false,
   "dependencies": {
     "@digitalcredentials/bnid": "^5.0.0",
-    "@interop/did-io": "^2.0.1",
+    "@interop/data-integrity-core": "^6.1.0",
+    "@interop/did-io": "^4.0.1",
     "@interop/http-client": "^1.0.3",
     "did-context": "^3.1.1"
   },
   "devDependencies": {
-    "@digitalcredentials/x25519-key-agreement-key-2020": "^2.0.2",
+    "@digitalcredentials/x25519-key-agreement-key-2020": "^3.0.0",
     "@eslint/js": "^10.0.1",
-    "@interop/ed25519-verification-key": "^6.2.0",
+    "@interop/ed25519-verification-key": "^7.0.1",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
     "@vitest/coverage-v8": "^4.1.7",

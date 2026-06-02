@@ -14,10 +14,18 @@ import {
   defaultFetchOptions
 } from './constants.js'
 import { assertDomain } from './assertions.js'
+import type { DidMethodDriver } from '@interop/did-io'
+import type {
+  AbstractKeyPair,
+  IDidDocument,
+  IKeyPair,
+  IPublicKey
+} from '@interop/data-integrity-core'
+import type { FromMultibase, KeyPairClass, RegisteredKeyType } from './types.js'
 
 const { VERIFICATION_RELATIONSHIPS } = didIo
 
-export function didFromUrl ({ url }: { url?: string } = {}): string {
+export function didFromUrl({ url }: { url?: string } = {}): string {
   if (!url) {
     throw new TypeError('Cannot convert url to did, missing url.')
   }
@@ -54,7 +62,7 @@ export function didFromUrl ({ url }: { url?: string } = {}): string {
   return 'did:web:' + encodeURIComponent(host) + pathComponent
 }
 
-export function urlFromDid ({ did }: { did: string | undefined }): string {
+export function urlFromDid({ did }: { did: string | undefined }): string {
   if (!did?.startsWith('did:web:')) {
     throw new TypeError(`DID Method not supported: "${did ?? ''}".`)
   }
@@ -64,7 +72,9 @@ export function urlFromDid ({ did }: { did: string | undefined }): string {
   const [_did, _web, urlNoProtocol = '', ...pathFragments] = didUrl.split(':')
 
   if (urlNoProtocol.includes('/')) {
-    throw new TypeError(`Cannot construct url from did: "${did}". domain-name cannot contain a path.`)
+    throw new TypeError(
+      `Cannot construct url from did: "${did}". domain-name cannot contain a path.`
+    )
   }
 
   let parsedUrl
@@ -79,7 +89,8 @@ export function urlFromDid ({ did }: { did: string | undefined }): string {
   if (pathFragments.length === 0) {
     parsedUrl.pathname = '/.well-known/did.json'
   } else {
-    parsedUrl.pathname = pathFragments.map(decodeURIComponent).join('/') + '/did.json'
+    parsedUrl.pathname =
+      pathFragments.map(decodeURIComponent).join('/') + '/did.json'
   }
 
   if (hashFragment) {
@@ -100,11 +111,16 @@ export function urlFromDid ({ did }: { did: string | undefined }): string {
  *
  * @returns {object} The matched subnode, cloned, with `@context`.
  */
-export function getNode (
-  { didDocument, id }: { didDocument: any, id: string }
-): any {
-  let match = (didDocument.verificationMethod ?? [])
-    .find((vm: any) => vm?.id === id)
+export function getNode({
+  didDocument,
+  id
+}: {
+  didDocument: any
+  id: string
+}): any {
+  let match = (didDocument.verificationMethod ?? []).find(
+    (vm: any) => vm?.id === id
+  )
   if (!match) {
     for (const [key, value] of Object.entries(didDocument)) {
       if (key === '@context' || key === 'verificationMethod') {
@@ -132,18 +148,18 @@ export function getNode (
 }
 
 interface VerificationMethodEntry {
-  keyPair: any
+  keyPair: AbstractKeyPair | IKeyPair
   fragment?: string
   purposes?: string[]
   serialization?: string
 }
 
-export class DidWebResolver {
+export class DidWebResolver implements DidMethodDriver {
   public method: string
   public allowList: string[]
   public fetchOptions: any
   public logger: any
-  public _allowedKeyTypes: Map<string, { fromMultibase: any, generate?: any }>
+  public _allowedKeyTypes: Map<string, RegisteredKeyType>
 
   /**
    * @param options {object} - Options hashmap.
@@ -153,11 +169,11 @@ export class DidWebResolver {
    *   client (`size` in bytes, `timeout` in ms).
    * @param [options.logger] {object} - Logger object (with .info, .error, etc).
    */
-  constructor ({
+  constructor({
     allowList = [],
     fetchOptions = defaultFetchOptions,
     logger = console
-  }: { allowList?: string[], fetchOptions?: any, logger?: any } = {}) {
+  }: { allowList?: string[]; fetchOptions?: any; logger?: any } = {}) {
     this.method = 'web' // did:web:... (used for didIo resolver harness)
     this.allowList = allowList
     this.fetchOptions = fetchOptions
@@ -182,9 +198,15 @@ export class DidWebResolver {
    * @param [options.multibaseMultikeyHeader] {string} - Multibase header.
    * @param [options.fromMultibase] {Function} - `{publicKeyMultibase}` to key.
    */
-  use ({ keyPairClass, multibaseMultikeyHeader, fromMultibase }:
-  { keyPairClass?: any, multibaseMultikeyHeader?: string, fromMultibase?: any } = {}
-  ): void {
+  use({
+    keyPairClass,
+    multibaseMultikeyHeader,
+    fromMultibase
+  }: {
+    keyPairClass?: KeyPairClass
+    multibaseMultikeyHeader?: string
+    fromMultibase?: FromMultibase
+  } = {}): void {
     if (keyPairClass) {
       const header = keyPairClass.multibaseHeader
       if (!(header && typeof header === 'string')) {
@@ -195,13 +217,16 @@ export class DidWebResolver {
       }
       this._allowedKeyTypes.set(header, {
         fromMultibase: keyPairClass.from.bind(keyPairClass),
-        generate: typeof keyPairClass.generate === 'function'
-          ? keyPairClass.generate.bind(keyPairClass)
-          : undefined
+        generate:
+          typeof keyPairClass.generate === 'function'
+            ? keyPairClass.generate.bind(keyPairClass)
+            : undefined
       })
       return
     }
-    if (!(multibaseMultikeyHeader && typeof multibaseMultikeyHeader === 'string')) {
+    if (
+      !(multibaseMultikeyHeader && typeof multibaseMultikeyHeader === 'string')
+    ) {
       throw new TypeError('"multibaseMultikeyHeader" must be a string.')
     }
     if (typeof fromMultibase !== 'function') {
@@ -221,7 +246,9 @@ export class DidWebResolver {
    *
    * @param options {object} - Options hashmap.
    * @param options.didDocument {object} - Document to mutate (must have `id`).
-   * @param options.keyPair {object} - A registered key suite instance.
+   * @param options.keyPair {object} - A registered key suite instance, or a
+   *   plain public key description (e.g. from a KMS), which is rebuilt into a
+   *   live instance via the registered suites.
    * @param [options.keyPairs] {Map} - Optional key-id to key-pair map to update.
    * @param [options.fragment] {string} - Author-chosen fragment (defaults to
    *   the key fingerprint).
@@ -229,18 +256,27 @@ export class DidWebResolver {
    * @param [options.serialization] {string} - `'multibase'` (default); `'jwk'`
    *   is reserved for when key suites expose JWK export.
    *
-   * @returns {object} The mutated DID document.
+   * @returns {Promise<object>} The mutated DID document.
    */
-  addVerificationMethod ({
-    didDocument, keyPairs, keyPair, fragment, purposes = DEFAULT_PURPOSES,
+  async addVerificationMethod({
+    didDocument,
+    keyPairs,
+    keyPair,
+    fragment,
+    purposes = DEFAULT_PURPOSES,
     serialization = 'multibase'
   }: {
-    didDocument: any, keyPairs?: Map<string, any>, keyPair: any,
-    fragment?: string, purposes?: string[], serialization?: string
-  }): any {
+    didDocument: any
+    keyPairs?: Map<string, AbstractKeyPair>
+    keyPair: AbstractKeyPair | IKeyPair
+    fragment?: string
+    purposes?: string[]
+    serialization?: string
+  }): Promise<IDidDocument> {
     if (!didDocument?.id) {
       throw new TypeError(
-        '"didDocument.id" is required to add a verification method.')
+        '"didDocument.id" is required to add a verification method.'
+      )
     }
     if (!keyPair) {
       throw new TypeError('A "keyPair" is required.')
@@ -249,11 +285,14 @@ export class DidWebResolver {
       throw new Error(`Serialization "${serialization}" is not yet supported.`)
     }
     const did = didDocument.id
-    fragment = fragment ?? _defaultFragment(keyPair)
-    keyPair.controller = did
-    keyPair.id = `${did}#${fragment}`
+    // Accept either a live key pair instance or a plain key description,
+    // rebuilding the latter into an instance that can `export()`.
+    const livePair = await this._toKeyPair(keyPair)
+    fragment = fragment ?? _defaultFragment(livePair)
+    livePair.controller = did
+    livePair.id = `${did}#${fragment}`
 
-    const publicNode = keyPair.export({ publicKey: true, includeContext: true })
+    const publicNode = livePair.export({ publicKey: true, includeContext: true })
     const context = publicNode['@context']
     delete publicNode['@context']
     if (context) {
@@ -271,7 +310,7 @@ export class DidWebResolver {
       didDocument[purpose].push(publicNode.id)
     }
 
-    keyPairs?.set(keyPair.id, keyPair)
+    keyPairs?.set(livePair.id!, livePair)
     return didDocument
   }
 
@@ -295,23 +334,35 @@ export class DidWebResolver {
    * @param [options.seed] {string|Uint8Array} - Secret seed to derive a key.
    * @param [options.keyType] {Function|string} - Which registered suite to
    *   generate with (a key class or its multibase header).
-   * @param [options.verificationKeyPair] {object} - A pre-made verification key.
-   * @param [options.keyAgreementKeyPair] {object} - A pre-made keyAgreement key.
+   * @param [options.verificationKeyPair] {object} - A pre-made verification key
+   *   (a live instance or a plain key description).
+   * @param [options.keyAgreementKeyPair] {object} - A pre-made keyAgreement key
+   *   (a live instance or a plain key description).
    * @param [options.verificationMethods] {Array} - Multi-key entries, each
    *   `{ keyPair, fragment?, purposes?, serialization? }`.
    *
    * @returns {Promise<{didDocument: object, keyPairs: Map, methodFor: Function}>}
    */
-  async generate ({
-    id, url, seed, keyType, verificationKeyPair, keyAgreementKeyPair,
+  async generate({
+    id,
+    url,
+    seed,
+    keyType,
+    verificationKeyPair,
+    keyAgreementKeyPair,
     verificationMethods
   }: {
-    id?: string, url?: string, seed?: string | Uint8Array,
-    keyType?: any, verificationKeyPair?: any, keyAgreementKeyPair?: any,
+    id?: string
+    url?: string
+    seed?: string | Uint8Array
+    keyType?: KeyPairClass | string
+    verificationKeyPair?: AbstractKeyPair | IKeyPair
+    keyAgreementKeyPair?: AbstractKeyPair | IKeyPair
     verificationMethods?: VerificationMethodEntry[]
   } = {}): Promise<{
-    didDocument: any, keyPairs: Map<string, any>,
-    methodFor: (options: { purpose: string }) => any
+    didDocument: IDidDocument
+    keyPairs: Map<string, AbstractKeyPair>
+    methodFor: (options: { purpose: string }) => AbstractKeyPair
   }> {
     if (!id && !url) {
       throw new TypeError('A "url" or an "id" parameter is required.')
@@ -321,11 +372,11 @@ export class DidWebResolver {
     assertDomain({ allowList: this.allowList, url: url ?? urlFromDid({ did }) })
 
     const didDocument: any = { '@context': [DID_CONTEXT_URL], id: did }
-    const keyPairs = new Map<string, any>()
+    const keyPairs = new Map<string, AbstractKeyPair>()
 
     if (verificationMethods && verificationMethods.length > 0) {
       for (const entry of verificationMethods) {
-        this.addVerificationMethod({
+        await this.addVerificationMethod({
           didDocument,
           keyPairs,
           keyPair: entry.keyPair,
@@ -340,13 +391,18 @@ export class DidWebResolver {
         keyPair = await this._generateKeyPair({ seed, keyType })
       }
       if (keyPair) {
-        this.addVerificationMethod({
-          didDocument, keyPairs, keyPair, purposes: DEFAULT_PURPOSES
+        await this.addVerificationMethod({
+          didDocument,
+          keyPairs,
+          keyPair,
+          purposes: DEFAULT_PURPOSES
         })
       }
       if (keyAgreementKeyPair) {
-        this.addVerificationMethod({
-          didDocument, keyPairs, keyPair: keyAgreementKeyPair,
+        await this.addVerificationMethod({
+          didDocument,
+          keyPairs,
+          keyPair: keyAgreementKeyPair,
           purposes: ['keyAgreement']
         })
       }
@@ -354,11 +410,12 @@ export class DidWebResolver {
 
     // Convenience function that returns the public/private key pair instance
     // for a given purpose (authentication, assertionMethod, keyAgreement, etc).
-    const methodFor = ({ purpose }: { purpose: string }): any => {
+    const methodFor = ({ purpose }: { purpose: string }): AbstractKeyPair => {
       const method: any = didIo.findVerificationMethod({
-        doc: didDocument, purpose
+        doc: didDocument,
+        purpose
       })
-      return keyPairs.get(method?.id)
+      return keyPairs.get(method?.id)!
     }
 
     return { didDocument, keyPairs, methodFor }
@@ -369,6 +426,10 @@ export class DidWebResolver {
    * is required (unlike `did:key`, a `did:web` identifier is not derivable from
    * key material alone).
    *
+   * Either key pair may be a live `AbstractKeyPair` instance or a plain public
+   * key description (e.g. from a KMS); plain descriptions are rebuilt into live
+   * instances via the registered key suites.
+   *
    * @param options {object} - Options hashmap.
    * @param [options.url] {string} - HTTPS url of the DID document.
    * @param [options.id] {string} - A did:web DID.
@@ -377,23 +438,33 @@ export class DidWebResolver {
    *
    * @returns {Promise<{didDocument: object, keyPairs: Map, methodFor: Function}>}
    */
-  async fromKeyPair ({
-    url, id, verificationKeyPair, keyAgreementKeyPair
+  async fromKeyPair({
+    url,
+    id,
+    verificationKeyPair,
+    keyAgreementKeyPair
   }: {
-    url?: string, id?: string, verificationKeyPair?: any,
-    keyAgreementKeyPair?: any
+    url?: string
+    id?: string
+    verificationKeyPair?: AbstractKeyPair | IKeyPair
+    keyAgreementKeyPair?: AbstractKeyPair | IKeyPair
   } = {}): Promise<{
-    didDocument: any, keyPairs: Map<string, any>,
-    methodFor: (options: { purpose: string }) => any
+    didDocument: IDidDocument
+    keyPairs: Map<string, AbstractKeyPair>
+    methodFor: (options: { purpose: string }) => AbstractKeyPair
   }> {
     if (!(verificationKeyPair || keyAgreementKeyPair)) {
       throw new TypeError(
-        '"verificationKeyPair" or "keyAgreementKeyPair" must be provided.')
+        '"verificationKeyPair" or "keyAgreementKeyPair" must be provided.'
+      )
     }
     if (!url && !id) {
       throw new TypeError(
-        'A "url" or "id" is required to build a did:web document.')
+        'A "url" or "id" is required to build a did:web document.'
+      )
     }
+    // `generate()` rebuilds any plain key descriptions into live instances
+    // (via `addVerificationMethod`), so they can be passed straight through.
     return this.generate({ url, id, verificationKeyPair, keyAgreementKeyPair })
   }
 
@@ -409,44 +480,31 @@ export class DidWebResolver {
    *
    * @returns {Promise<{didDocument: object}>}
    */
-  async publicKeyToDidDoc ({
-    url, id, publicKeyDescription
+  async publicKeyToDidDoc({
+    url,
+    id,
+    publicKeyDescription
   }: {
-    url?: string, id?: string, publicKeyDescription?: any
-  } = {}): Promise<{ didDocument: any }> {
+    url?: string
+    id?: string
+    publicKeyDescription?: AbstractKeyPair | IKeyPair
+  } = {}): Promise<{ didDocument: IDidDocument }> {
     if (!publicKeyDescription) {
       throw new TypeError('"publicKeyDescription" is required.')
     }
     if (!url && !id) {
       throw new TypeError(
-        'A "url" or "id" is required to build a did:web document.')
+        'A "url" or "id" is required to build a did:web document.'
+      )
     }
     const did = id ?? didFromUrl({ url })
     const didDocument: any = { '@context': [DID_CONTEXT_URL], id: did }
-    const keyPair = await this._toKeyPair(publicKeyDescription)
-    this.addVerificationMethod({ didDocument, keyPair, purposes: DEFAULT_PURPOSES })
+    await this.addVerificationMethod({
+      didDocument,
+      keyPair: publicKeyDescription,
+      purposes: DEFAULT_PURPOSES
+    })
     return { didDocument }
-  }
-
-  /**
-   * Computes the id of a given key pair (used by `did-io` drivers). For
-   * `did:web` the id depends on the document's DID, so the key pair must
-   * already carry an `id` or a `controller`.
-   *
-   * @param options {object} - Options hashmap.
-   * @param options.keyPair {object} - The key pair.
-   *
-   * @returns {Promise<string>} The key's id.
-   */
-  async computeId ({ keyPair }: { keyPair: any }): Promise<string> {
-    if (keyPair?.id) {
-      return keyPair.id
-    }
-    if (keyPair?.controller) {
-      return `${keyPair.controller}#${_defaultFragment(keyPair)}`
-    }
-    throw new TypeError(
-      'Cannot compute id: key pair has no "id" or "controller".')
   }
 
   /**
@@ -465,14 +523,23 @@ export class DidWebResolver {
    *
    * @throws {Error}
    *
-   * @returns {Promise<object>} The DID Document, or a public key / subnode.
+   * @returns {Promise<IDidDocument | IPublicKey>} The DID Document, or a public
+   *   key / subnode.
    */
-  async get ({
-    did, url, agent, fetchOptions = {}, logger = this.logger
+  async get({
+    did,
+    url,
+    agent,
+    fetchOptions = {},
+    logger = this.logger
   }: {
-    did?: string, url?: string, agent?: any, fetchOptions?: any, logger?: any,
-    [key: string]: unknown
-  } = {}): Promise<object> {
+    did?: string
+    url?: string
+    agent?: any
+    fetchOptions?: any
+    logger?: any
+    [_key: string]: unknown
+  } = {}): Promise<IDidDocument | IPublicKey> {
     did = did ?? url
     if (!did) {
       throw new TypeError('A DID or a URL is required to fetch.')
@@ -491,8 +558,11 @@ export class DidWebResolver {
     let didDocument: any
     try {
       logger.info(`Fetching "${fetchUrl}" via http client.`)
-      const result = await httpClient.get(
-        fetchUrl, { ...this.fetchOptions, ...fetchOptions, agent })
+      const result = await httpClient.get(fetchUrl, {
+        ...this.fetchOptions,
+        ...fetchOptions,
+        agent
+      })
       didDocument = result.data
     } catch (err: any) {
       // status is HTTP status code; data is the server's JSON error if any.
@@ -525,7 +595,10 @@ export class DidWebResolver {
    *
    * @returns {object} The public key object (without a `@context`).
    */
-  publicMethodFor ({ didDocument, purpose }: { didDocument: any, purpose: string }): any {
+  publicMethodFor({
+    didDocument,
+    purpose
+  }: { didDocument?: IDidDocument; purpose?: string } = {}): IPublicKey {
     if (!didDocument) {
       throw new TypeError('The "didDocument" parameter is required.')
     }
@@ -536,7 +609,7 @@ export class DidWebResolver {
     if (!method) {
       throw new Error(`No verification method found for purpose "${purpose}"`)
     }
-    return method
+    return method as IPublicKey
   }
 
   /**
@@ -548,9 +621,13 @@ export class DidWebResolver {
    *
    * @returns {Promise<object>} The generated key pair.
    */
-  async _generateKeyPair (
-    { seed, keyType }: { seed?: string | Uint8Array, keyType?: any } = {}
-  ): Promise<any> {
+  async _generateKeyPair({
+    seed,
+    keyType
+  }: {
+    seed?: string | Uint8Array
+    keyType?: KeyPairClass | string
+  } = {}): Promise<AbstractKeyPair> {
     let header: string | undefined
     if (keyType) {
       header = typeof keyType === 'string' ? keyType : keyType.multibaseHeader
@@ -559,18 +636,21 @@ export class DidWebResolver {
     } else if (this._allowedKeyTypes.size === 0) {
       throw new Error(
         'No key suite registered; call "use({keyPairClass})" or pass a ' +
-          '"verificationKeyPair".')
+          '"verificationKeyPair".'
+      )
     } else {
       throw new Error(
         'Multiple key suites registered; specify which via "keyType" or pass ' +
-          'a "verificationKeyPair".')
+          'a "verificationKeyPair".'
+      )
     }
 
     const registered = this._allowedKeyTypes.get(header!)
     if (!registered?.generate) {
       throw new Error(
         `Registered suite "${header}" cannot generate keys; register it via ` +
-          '"use({keyPairClass})".')
+          '"use({keyPairClass})".'
+      )
     }
     const seedBytes = seed === undefined ? undefined : _decodeSeed(seed)
     return registered.generate({ seed: seedBytes })
@@ -584,21 +664,23 @@ export class DidWebResolver {
    *
    * @returns {Promise<object>} A live key pair instance.
    */
-  async _toKeyPair (description: any): Promise<any> {
+  async _toKeyPair(description: any): Promise<AbstractKeyPair> {
     if (typeof description?.export === 'function') {
       return description
     }
     const publicKeyMultibase = description?.publicKeyMultibase
     if (!publicKeyMultibase) {
       throw new TypeError(
-        '"publicKeyMultibase" is required to rebuild a key pair.')
+        '"publicKeyMultibase" is required to rebuild a key pair.'
+      )
     }
     const header = publicKeyMultibase.slice(0, 4)
     const registered = this._allowedKeyTypes.get(header)
     if (!registered) {
       throw new Error(
         `Unsupported multibase header "${header}". Register the suite via ` +
-          '"use()".')
+          '"use()".'
+      )
     }
     return registered.fromMultibase({ publicKeyMultibase })
   }
@@ -611,9 +693,13 @@ export class DidWebResolver {
  * @param options.didDocument {object} - The document to mutate.
  * @param options.context {string|string[]} - Context(s) to add.
  */
-function _addContext (
-  { didDocument, context }: { didDocument: any, context: string | string[] }
-): void {
+function _addContext({
+  didDocument,
+  context
+}: {
+  didDocument: any
+  context: string | string[]
+}): void {
   const contexts = Array.isArray(didDocument['@context'])
     ? didDocument['@context']
     : [didDocument['@context']]
@@ -634,7 +720,7 @@ function _addContext (
  *
  * @returns {string} The fragment (without a leading `#`).
  */
-function _defaultFragment (keyPair: any): string {
+function _defaultFragment(keyPair: any): string {
   if (typeof keyPair?.fingerprint === 'function') {
     return keyPair.fingerprint()
   }
@@ -642,7 +728,8 @@ function _defaultFragment (keyPair: any): string {
     return keyPair.publicKeyMultibase
   }
   throw new TypeError(
-    'Cannot determine a default fragment; provide a "fragment".')
+    'Cannot determine a default fragment; provide a "fragment".'
+  )
 }
 
 /**
@@ -653,12 +740,13 @@ function _defaultFragment (keyPair: any): string {
  *
  * @returns {Uint8Array} The decoded seed bytes.
  */
-function _decodeSeed (seed: string | Uint8Array): Uint8Array {
+function _decodeSeed(seed: string | Uint8Array): Uint8Array {
   if (typeof seed === 'string') {
     if (!seed.startsWith('z1A')) {
       throw new TypeError(
         '"seed" parameter must be a multibase/multihash encoded string, or a ' +
-          'Uint8Array.')
+          'Uint8Array.'
+      )
     }
     return decodeSecretKeySeed({ secretKeySeed: seed })
   }
