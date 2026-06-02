@@ -11,11 +11,12 @@
  *
  * @throws {TypeError} If the value is not a URL or its protocol is not https.
  */
-export function assertHttpsUrl (url: URL | string): void {
+export function assertHttpsUrl(url: URL | string): void {
   const parsed = assertUrl(url)
   if (parsed.protocol !== 'https:') {
     throw new TypeError(
-      `"url" protocol must be "https:"; received "${parsed.protocol}".`)
+      `"url" protocol must be "https:"; received "${parsed.protocol}".`
+    )
   }
 }
 
@@ -26,7 +27,7 @@ export function assertHttpsUrl (url: URL | string): void {
  *
  * @returns {URL} The parsed URL.
  */
-export function assertUrl (url: URL | string): URL {
+export function assertUrl(url: URL | string): URL {
   if (url instanceof URL) {
     return url
   }
@@ -45,12 +46,14 @@ export function assertUrl (url: URL | string): URL {
  *
  * @throws {Error} If the DID is missing, malformed, or not a did:web DID.
  */
-export function assertDidWebUrl (did: string): void {
+export function assertDidWebUrl(did: string): void {
   if (!did) {
     throw new TypeError('"did" must be a non-zero length string.')
   }
   if (typeof did !== 'string') {
-    throw new TypeError(`Expected DID to be a string; received "${typeof did}".`)
+    throw new TypeError(
+      `Expected DID to be a string; received "${typeof did}".`
+    )
   }
   const [scheme, method, domain] = did.split(':', 3)
   if (scheme !== 'did') {
@@ -60,7 +63,8 @@ export function assertDidWebUrl (did: string): void {
   }
   if (method !== 'web') {
     const err: any = new Error(
-      `DID method must be "web"; received "${method}".`)
+      `DID method must be "web"; received "${method}".`
+    )
     err.code = 'methodNotSupported'
     throw err
   }
@@ -69,7 +73,8 @@ export function assertDidWebUrl (did: string): void {
   }
   if (domain.includes('/')) {
     throw new Error(
-      `Expected domain to not contain a path; received "${domain}".`)
+      `Expected domain to not contain a path; received "${domain}".`
+    )
   }
 }
 
@@ -84,9 +89,13 @@ export function assertDidWebUrl (did: string): void {
  *
  * @throws {Error} If the host is not in a non-empty allow list.
  */
-export function assertDomain (
-  { allowList, url }: { allowList?: string[], url: URL | string }
-): void {
+export function assertDomain({
+  allowList,
+  url
+}: {
+  allowList?: string[]
+  url: URL | string
+}): void {
   if (!allowList || allowList.length === 0) {
     return
   }

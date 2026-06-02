@@ -6,9 +6,10 @@ import {
 } from './DidWebResolver.js'
 
 const driver = (
-  options: { allowList?: string[], fetchOptions?: any, logger?: any } = {}
+  options: { allowList?: string[]; fetchOptions?: any; logger?: any } = {}
 ): DidWebResolver => {
   return new DidWebResolver(options)
 }
 
 export { driver, DidWebResolver, didFromUrl, getNode, urlFromDid }
+export type { FromMultibase, KeyPairClass } from './types.js'

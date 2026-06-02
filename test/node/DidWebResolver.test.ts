@@ -3,15 +3,17 @@ import { describe, it, beforeEach, afterEach, assert, vi } from 'vitest'
 import { httpClient } from '@interop/http-client'
 
 import {
-  DidWebResolver, urlFromDid, didFromUrl, getNode
+  DidWebResolver,
+  urlFromDid,
+  didFromUrl,
+  getNode
 } from '../../src/index.js'
 
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
-import { X25519KeyAgreementKey2020 }
-  from '@digitalcredentials/x25519-key-agreement-key-2020'
+import { X25519KeyAgreementKey2020 } from '@digitalcredentials/x25519-key-agreement-key-2020'
 
-function makeResolver (
-  options: { allowList?: string[], fetchOptions?: any, logger?: any } = {}
+function makeResolver(
+  options: { allowList?: string[]; fetchOptions?: any; logger?: any } = {}
 ): DidWebResolver {
   const didWeb = new DidWebResolver(options)
   didWeb.use({ keyPairClass: Ed25519VerificationKey })
@@ -19,7 +21,7 @@ function makeResolver (
 }
 
 // Stubs the http client to return a fixed DID document body.
-function stubRequest ({ data }: { data: any }): void {
+function stubRequest({ data }: { data: any }): void {
   vi.spyOn(httpClient, 'get').mockResolvedValue({ data } as any)
 }
 
@@ -39,7 +41,8 @@ describe('DidWebResolver', () => {
       const didWeb = new DidWebResolver()
       assert.throws(
         () => didWeb.use({ keyPairClass: class {} }),
-        '"keyPairClass.multibaseHeader" must be a string.')
+        '"keyPairClass.multibaseHeader" must be a string.'
+      )
     })
 
     it('should register a low-level fromMultibase deserializer', () => {
@@ -59,11 +62,14 @@ describe('DidWebResolver', () => {
       const keyAgreementKeyPair = await X25519KeyAgreementKey2020.generate()
       const url = 'https://example.com'
       const { didDocument } = await didWeb.generate({
-        url, verificationKeyPair, keyAgreementKeyPair
+        url,
+        verificationKeyPair,
+        keyAgreementKeyPair
       })
 
       const keyAgreementKey = didWeb.publicMethodFor({
-        didDocument, purpose: 'keyAgreement'
+        didDocument,
+        purpose: 'keyAgreement'
       })
 
       assert.equal(keyAgreementKey.type, 'X25519KeyAgreementKey2020')
@@ -135,7 +141,8 @@ describe('DidWebResolver', () => {
       assert.equal(assertionKey.controller, 'did:web:example.com')
       assert.equal(
         assertionKey.publicKeyMultibase,
-        'z6MkmDMjfkjs9XPCN1LfoQQRHz1mJ8PEdiVYC66XKhj3wGyB')
+        'z6MkmDMjfkjs9XPCN1LfoQQRHz1mJ8PEdiVYC66XKhj3wGyB'
+      )
       assert.property(assertionKey, 'privateKeyMultibase')
     })
 
@@ -143,14 +150,17 @@ describe('DidWebResolver', () => {
       const verificationKeyPair = await Ed25519VerificationKey.generate()
       const keyAgreementKeyPair = await X25519KeyAgreementKey2020.generate()
       const { didDocument, keyPairs } = await didWeb.generate({
-        url: 'https://example.com', verificationKeyPair, keyAgreementKeyPair
+        url: 'https://example.com',
+        verificationKeyPair,
+        keyAgreementKeyPair
       })
 
       assert.equal(didDocument.verificationMethod.length, 2)
       assert.equal(didDocument.keyAgreement.length, 1)
       const kaId = didDocument.keyAgreement[0]
-      const kaNode = didDocument.verificationMethod
-        .find((vm: any) => vm.id === kaId)
+      const kaNode = didDocument.verificationMethod.find(
+        (vm: any) => vm.id === kaId
+      )
       assert.equal(kaNode.type, 'X25519KeyAgreementKey2020')
       assert.equal(keyPairs.size, 2)
     })
@@ -170,11 +180,16 @@ describe('DidWebResolver', () => {
 
       assert.equal(
         didDocument.verificationMethod[0].id,
-        'did:web:example.com#ed25519-1')
+        'did:web:example.com#ed25519-1'
+      )
       assert.equal(
-        didDocument.authentication[0], 'did:web:example.com#ed25519-1')
+        didDocument.authentication[0],
+        'did:web:example.com#ed25519-1'
+      )
       assert.equal(
-        didDocument.assertionMethod[0], 'did:web:example.com#ed25519-1')
+        didDocument.assertionMethod[0],
+        'did:web:example.com#ed25519-1'
+      )
       assert.notProperty(didDocument, 'capabilityInvocation')
     })
 
@@ -208,7 +223,9 @@ describe('DidWebResolver', () => {
     })
 
     it('should round-trip a generated document', async () => {
-      const { didDocument } = await didWeb.generate({ url: 'https://example.com' })
+      const { didDocument } = await didWeb.generate({
+        url: 'https://example.com'
+      })
       stubRequest({ data: didDocument })
 
       const result = await didWeb.get({ did: 'did:web:example.com' })
@@ -217,14 +234,19 @@ describe('DidWebResolver', () => {
     })
 
     it('should fetch the .well-known url for a bare did', async () => {
-      const { didDocument } = await didWeb.generate({ url: 'https://example.com' })
-      const spy = vi.spyOn(httpClient, 'get')
+      const { didDocument } = await didWeb.generate({
+        url: 'https://example.com'
+      })
+      const spy = vi
+        .spyOn(httpClient, 'get')
         .mockResolvedValue({ data: didDocument } as any)
 
       await didWeb.get({ did: 'did:web:example.com' })
 
       assert.equal(
-        spy.mock.calls[0][0], 'https://example.com/.well-known/did.json')
+        spy.mock.calls[0][0],
+        'https://example.com/.well-known/did.json'
+      )
     })
 
     it('should reject when the fetched document id mismatches', async () => {
@@ -236,11 +258,15 @@ describe('DidWebResolver', () => {
         error = err
       }
       assert.equal(
-        error.message, 'DID document for DID "did:web:example.com" not found.')
+        error.message,
+        'DID document for DID "did:web:example.com" not found.'
+      )
     })
 
     it('should dereference a verification method by fragment', async () => {
-      const { didDocument } = await didWeb.generate({ url: 'https://example.com' })
+      const { didDocument } = await didWeb.generate({
+        url: 'https://example.com'
+      })
       const vmId = didDocument.verificationMethod[0].id
       const fragment = vmId.split('#')[1]
       stubRequest({ data: didDocument })
@@ -256,11 +282,13 @@ describe('DidWebResolver', () => {
       const didDocument = {
         '@context': ['https://www.w3.org/ns/did/v1'],
         id: 'did:web:example.com',
-        service: [{
-          id: 'did:web:example.com#hub',
-          type: 'HubService',
-          serviceEndpoint: 'https://hub.example.com'
-        }]
+        service: [
+          {
+            id: 'did:web:example.com#hub',
+            type: 'HubService',
+            serviceEndpoint: 'https://hub.example.com'
+          }
+        ]
       }
       stubRequest({ data: didDocument })
 
@@ -314,7 +342,8 @@ describe('DidWebResolver', () => {
       }
       assert.throws(
         () => getNode({ didDocument, id: 'did:web:example.com#missing' }),
-        'DID document entity with id "did:web:example.com#missing" not found.')
+        'DID document entity with id "did:web:example.com#missing" not found.'
+      )
     })
   })
 
@@ -326,7 +355,10 @@ describe('DidWebResolver', () => {
       } catch (e: any) {
         error = e
       }
-      assert.equal(error.message, 'DID Method not supported: "did:example:1234".')
+      assert.equal(
+        error.message,
+        'DID Method not supported: "did:example:1234".'
+      )
     })
 
     it('should error on pattern did:web:domain/path/subpath', () => {
@@ -337,7 +369,7 @@ describe('DidWebResolver', () => {
         'did:web:example.com/path/subpath#fragment',
         'did:web:example.com/:user:alice'
       ]
-      invalidDids.forEach((did) => {
+      invalidDids.forEach(did => {
         let error
         try {
           urlFromDid({ did })
@@ -353,11 +385,17 @@ describe('DidWebResolver', () => {
     })
 
     it('should convert first id fragment to pathname plus default path', () => {
-      assert.equal(urlFromDid({ did: 'did:web:example.com' }), 'https://example.com/.well-known/did.json')
+      assert.equal(
+        urlFromDid({ did: 'did:web:example.com' }),
+        'https://example.com/.well-known/did.json'
+      )
     })
 
     it('should url-decode host', () => {
-      assert.equal(urlFromDid({ did: 'did:web:localhost%3A8080' }), 'https://localhost:8080/.well-known/did.json')
+      assert.equal(
+        urlFromDid({ did: 'did:web:localhost%3A8080' }),
+        'https://localhost:8080/.well-known/did.json'
+      )
     })
 
     it('should preserve hash fragments for dids without paths', () => {
@@ -378,12 +416,16 @@ describe('DidWebResolver', () => {
     })
 
     it('should preserve hash fragments for dids with optional path', () => {
-      const url = urlFromDid({ did: 'did:web:w3c-ccg.github.io:user:alice#keyId' })
+      const url = urlFromDid({
+        did: 'did:web:w3c-ccg.github.io:user:alice#keyId'
+      })
       assert.equal(url, 'https://w3c-ccg.github.io/user/alice/did.json#keyId')
     })
 
     it('should preserve hash fragments for dids with optional path and port', () => {
-      const url = urlFromDid({ did: 'did:web:example.com%3A3000:user:alice#keyId' })
+      const url = urlFromDid({
+        did: 'did:web:example.com%3A3000:user:alice#keyId'
+      })
       assert.equal(url, 'https://example.com:3000/user/alice/did.json#keyId')
     })
   })
@@ -420,28 +462,49 @@ describe('DidWebResolver', () => {
     })
 
     it('should convert host to did identifier', () => {
-      assert.equal(didFromUrl({ url: 'https://localhost' }), 'did:web:localhost')
-      assert.equal(didFromUrl({ url: 'https://example.com' }), 'did:web:example.com')
+      assert.equal(
+        didFromUrl({ url: 'https://localhost' }),
+        'did:web:localhost'
+      )
+      assert.equal(
+        didFromUrl({ url: 'https://example.com' }),
+        'did:web:example.com'
+      )
     })
 
     it('should url-encode host', () => {
-      assert.equal(didFromUrl({ url: 'https://localhost:8080' }), 'did:web:localhost%3A8080')
+      assert.equal(
+        didFromUrl({ url: 'https://localhost:8080' }),
+        'did:web:localhost%3A8080'
+      )
     })
 
     it('should leave off the default / path', () => {
-      assert.equal(didFromUrl({ url: 'https://example.com/' }), 'did:web:example.com')
+      assert.equal(
+        didFromUrl({ url: 'https://example.com/' }),
+        'did:web:example.com'
+      )
     })
 
     it('should encode path / separators as :', () => {
-      assert.equal(didFromUrl({ url: 'https://example.com/path/subpath/did.json' }), 'did:web:example.com:path:subpath')
+      assert.equal(
+        didFromUrl({ url: 'https://example.com/path/subpath/did.json' }),
+        'did:web:example.com:path:subpath'
+      )
     })
 
     it('should drop the default /.well-known/did.json pathname', () => {
-      assert.equal(didFromUrl({ url: 'https://example.com/.well-known/did.json' }), 'did:web:example.com')
+      assert.equal(
+        didFromUrl({ url: 'https://example.com/.well-known/did.json' }),
+        'did:web:example.com'
+      )
     })
 
     it('should url-encode path fragments', () => {
-      assert.equal(didFromUrl({ url: 'https://example.com/path/some+subpath' }), 'did:web:example.com:path:some%2Bsubpath')
+      assert.equal(
+        didFromUrl({ url: 'https://example.com/path/some+subpath' }),
+        'did:web:example.com:path:some%2Bsubpath'
+      )
     })
   })
 })
