@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 6.1.0 - TBD
+## 6.1.0 - 2026-06-01
 
 ### Changed
 - Replace local `any` types in the `DidWebResolver` API with the shared types
