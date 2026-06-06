@@ -1,5 +1,10 @@
 # did-web-driver ChangeLog
 
+## 6.1.1 - 2026-06-06
+
+### Added
+- Add default export to `package.json`.
+
 ## 6.1.0 - 2026-06-01
 
 ### Changed
