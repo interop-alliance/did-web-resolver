@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 6.2.0 - TBD
+## 6.2.0 - 2026-06-08
 
 ### Added
 - `addVerificationMethod()` accepts an `embed` option (default `true`). When
