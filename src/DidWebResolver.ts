@@ -6,7 +6,7 @@
  */
 import { httpClient } from '@interop/http-client'
 import * as didIo from '@interop/did-io'
-import { decodeSecretKeySeed } from '@digitalcredentials/bnid'
+import { decodeSecretKeySeed } from '@interop/bnid'
 import {
   DID_CONTEXT_URL,
   DEFAULT_PURPOSES,
@@ -17,8 +17,9 @@ import { assertDomain } from './assertions.js'
 import type { DidMethodDriver } from '@interop/did-io'
 import type {
   AbstractKeyPair,
-  IDidDocument,
+  IDIDDocument,
   IKeyPair,
+  ILDContext,
   IPublicKey
 } from '@interop/data-integrity-core'
 import type { FromMultibase, KeyPairClass, RegisteredKeyType } from './types.js'
@@ -295,7 +296,7 @@ export class DidWebResolver implements DidMethodDriver {
     purposes?: string[]
     embed?: boolean
     serialization?: string
-  }): Promise<IDidDocument> {
+  }): Promise<IDIDDocument> {
     if (!didDocument?.id) {
       throw new TypeError(
         '"didDocument.id" is required to add a verification method.'
@@ -315,7 +316,10 @@ export class DidWebResolver implements DidMethodDriver {
     livePair.controller = did
     livePair.id = `${did}#${fragment}`
 
-    const publicNode = livePair.export({ publicKey: true, includeContext: true })
+    const publicNode = livePair.export({
+      publicKey: true,
+      includeContext: true
+    })
     const context = publicNode['@context']
     delete publicNode['@context']
     if (context) {
@@ -387,7 +391,7 @@ export class DidWebResolver implements DidMethodDriver {
     keyAgreementKeyPair?: AbstractKeyPair | IKeyPair
     verificationMethods?: VerificationMethodEntry[]
   } = {}): Promise<{
-    didDocument: IDidDocument
+    didDocument: IDIDDocument
     keyPairs: Map<string, AbstractKeyPair>
     methodFor: (options: { purpose: string }) => AbstractKeyPair
   }> {
@@ -479,7 +483,7 @@ export class DidWebResolver implements DidMethodDriver {
     verificationKeyPair?: AbstractKeyPair | IKeyPair
     keyAgreementKeyPair?: AbstractKeyPair | IKeyPair
   } = {}): Promise<{
-    didDocument: IDidDocument
+    didDocument: IDIDDocument
     keyPairs: Map<string, AbstractKeyPair>
     methodFor: (options: { purpose: string }) => AbstractKeyPair
   }> {
@@ -518,7 +522,7 @@ export class DidWebResolver implements DidMethodDriver {
     url?: string
     id?: string
     publicKeyDescription?: AbstractKeyPair | IKeyPair
-  } = {}): Promise<{ didDocument: IDidDocument }> {
+  } = {}): Promise<{ didDocument: IDIDDocument }> {
     if (!publicKeyDescription) {
       throw new TypeError('"publicKeyDescription" is required.')
     }
@@ -554,7 +558,7 @@ export class DidWebResolver implements DidMethodDriver {
    *
    * @throws {Error}
    *
-   * @returns {Promise<IDidDocument | IPublicKey>} The DID Document, or a public
+   * @returns {Promise<IDIDDocument | IPublicKey>} The DID Document, or a public
    *   key / subnode.
    */
   async get({
@@ -570,7 +574,7 @@ export class DidWebResolver implements DidMethodDriver {
     fetchOptions?: any
     logger?: any
     [_key: string]: unknown
-  } = {}): Promise<IDidDocument | IPublicKey> {
+  } = {}): Promise<IDIDDocument | IPublicKey> {
     did = did ?? url
     if (!did) {
       throw new TypeError('A DID or a URL is required to fetch.')
@@ -629,7 +633,7 @@ export class DidWebResolver implements DidMethodDriver {
   publicMethodFor({
     didDocument,
     purpose
-  }: { didDocument?: IDidDocument; purpose?: string } = {}): IPublicKey {
+  }: { didDocument?: IDIDDocument; purpose?: string } = {}): IPublicKey {
     if (!didDocument) {
       throw new TypeError('The "didDocument" parameter is required.')
     }
@@ -722,14 +726,14 @@ export class DidWebResolver implements DidMethodDriver {
  *
  * @param options {object} - Options hashmap.
  * @param options.didDocument {object} - The document to mutate.
- * @param options.context {string|string[]} - Context(s) to add.
+ * @param options.context {ILDContext} - Context(s) to add.
  */
 function _addContext({
   didDocument,
   context
 }: {
   didDocument: any
-  context: string | string[]
+  context: ILDContext
 }): void {
   const contexts = Array.isArray(didDocument['@context'])
     ? didDocument['@context']

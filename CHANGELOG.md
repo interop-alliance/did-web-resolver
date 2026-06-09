@@ -17,6 +17,13 @@
   fallback, so the resolver works on runtimes that lack
   `structuredClone` (e.g. React Native's Hermes engine). Native `structuredClone`
   is still used when available.
+- Update `@interop/data-integrity-core` to `^6.4.0` (and `@interop/did-io` to
+  `^4.0.2`, `@interop/ed25519-verification-key` to `^7.0.2`). Align with the
+  renamed `IDIDDocument` type and the widened `ILDContext`
+  (`string | Array<string | Record<string, unknown>>`); the internal `_addContext`
+  helper now accepts `ILDContext`. No public API behavior change.
+- Replace the `@digitalcredentials/bnid` dependency with `@interop/bnid`
+  (`^6.0.1`).
 
 ## 6.1.1 - 2026-06-06
 
