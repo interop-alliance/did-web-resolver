@@ -40,7 +40,7 @@ describe('DidWebResolver', () => {
     it('should reject a keyPairClass without a multibaseHeader', () => {
       const didWeb = new DidWebResolver()
       assert.throws(
-        () => didWeb.use({ keyPairClass: class {} }),
+        () => didWeb.use({ keyPairClass: class {} as any }),
         '"keyPairClass.multibaseHeader" must be a string.'
       )
     })
@@ -95,7 +95,7 @@ describe('DidWebResolver', () => {
 
     it('should generate from the single registered key suite', async () => {
       const url = 'https://example.com'
-      const { didDocument, keyPairs } = await didWeb.generate({ url })
+      const { didDocument, keyPairs } = (await didWeb.generate({ url })) as any
 
       assert.property(didDocument, '@context')
       assert.equal(didDocument.id, 'did:web:example.com')
@@ -140,7 +140,7 @@ describe('DidWebResolver', () => {
       assert.equal(assertionKey.id, expectedKeyId)
       assert.equal(assertionKey.controller, 'did:web:example.com')
       assert.equal(
-        assertionKey.publicKeyMultibase,
+        (assertionKey as any).publicKeyMultibase,
         'z6MkmDMjfkjs9XPCN1LfoQQRHz1mJ8PEdiVYC66XKhj3wGyB'
       )
       assert.property(assertionKey, 'privateKeyMultibase')
@@ -149,11 +149,11 @@ describe('DidWebResolver', () => {
     it('should place an explicit keyAgreement key', async () => {
       const verificationKeyPair = await Ed25519VerificationKey.generate()
       const keyAgreementKeyPair = await X25519KeyAgreementKey2020.generate()
-      const { didDocument, keyPairs } = await didWeb.generate({
+      const { didDocument, keyPairs } = (await didWeb.generate({
         url: 'https://example.com',
         verificationKeyPair,
         keyAgreementKeyPair
-      })
+      })) as any
 
       assert.equal(didDocument.verificationMethod.length, 2)
       assert.equal(didDocument.keyAgreement.length, 1)
@@ -167,7 +167,7 @@ describe('DidWebResolver', () => {
 
     it('should build a multi-key document from verificationMethods', async () => {
       const edKey = await Ed25519VerificationKey.generate()
-      const { didDocument } = await didWeb.generate({
+      const { didDocument } = (await didWeb.generate({
         url: 'https://example.com',
         verificationMethods: [
           {
@@ -176,7 +176,7 @@ describe('DidWebResolver', () => {
             purposes: ['authentication', 'assertionMethod']
           }
         ]
-      })
+      })) as any
 
       assert.equal(
         didDocument.verificationMethod[0].id,
@@ -208,9 +208,9 @@ describe('DidWebResolver', () => {
   describe('addVerificationMethod()', () => {
     it('should reference the method by id when embed is false', async () => {
       const didWeb = makeResolver()
-      const { didDocument } = await didWeb.generate({
+      const { didDocument } = (await didWeb.generate({
         url: 'https://example.com'
-      })
+      })) as any
 
       const newKey = await Ed25519VerificationKey.generate()
       await didWeb.addVerificationMethod({
@@ -223,17 +223,15 @@ describe('DidWebResolver', () => {
 
       const newId = 'did:web:example.com#key-2'
       // Listed once in verificationMethod, referenced by id under the purpose.
-      assert(
-        didDocument.verificationMethod.find((vm: any) => vm.id === newId)
-      )
+      assert(didDocument.verificationMethod.find((vm: any) => vm.id === newId))
       assert.equal(didDocument.authentication[1], newId)
     })
 
     it('should embed the public key under each purpose by default', async () => {
       const didWeb = makeResolver()
-      const { didDocument } = await didWeb.generate({
+      const { didDocument } = (await didWeb.generate({
         url: 'https://example.com'
-      })
+      })) as any
       const vmCountBefore = didDocument.verificationMethod.length
 
       const newKey = await Ed25519VerificationKey.generate()
@@ -300,7 +298,7 @@ describe('DidWebResolver', () => {
       await didWeb.get({ did: 'did:web:example.com' })
 
       assert.equal(
-        spy.mock.calls[0][0],
+        spy.mock.calls[0]![0],
         'https://example.com/.well-known/did.json'
       )
     })
@@ -320,14 +318,16 @@ describe('DidWebResolver', () => {
     })
 
     it('should dereference a verification method by fragment', async () => {
-      const { didDocument } = await didWeb.generate({
+      const { didDocument } = (await didWeb.generate({
         url: 'https://example.com'
-      })
+      })) as any
       const vmId = didDocument.verificationMethod[0].id
       const fragment = vmId.split('#')[1]
       stubRequest({ data: didDocument })
 
-      const node = await didWeb.get({ did: `did:web:example.com#${fragment}` })
+      const node = (await didWeb.get({
+        did: `did:web:example.com#${fragment}`
+      })) as any
 
       assert.equal(node.id, vmId)
       assert.equal(node.type, 'Multikey')
@@ -348,7 +348,7 @@ describe('DidWebResolver', () => {
       }
       stubRequest({ data: didDocument })
 
-      const node = await didWeb.get({ did: 'did:web:example.com#hub' })
+      const node = (await didWeb.get({ did: 'did:web:example.com#hub' })) as any
 
       assert.equal(node.id, 'did:web:example.com#hub')
       assert.equal(node.type, 'HubService')
