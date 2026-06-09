@@ -1,5 +1,22 @@
 # did-web-driver ChangeLog
 
+## 6.2.1 - TBD
+
+### Changed
+- Update `@interop/data-integrity-core` to `^7.0.0` (and `@interop/did-io` to
+  `^4.0.4`, `@interop/ed25519-verification-key` to `^8.0.0`), in which
+  `AbstractKeyPair.export()` is now `async`. No public API change here; see the
+  `export()` fix below.
+
+### Fixed
+- `addVerificationMethod()` now awaits the key suite's `export()`. Previously the
+  result was used synchronously, which worked for suites with a synchronous
+  `export()` (e.g. ed25519) but embedded an unresolved `Promise` for suites with
+  an asynchronous `export()` (e.g. the WebCrypto-backed `ecdsa-multikey` suite),
+  breaking the generated DID document. Since `generate()` is built on
+  `addVerificationMethod()`, this also fixes `did:web` generation from ECDSA key
+  pairs.
+
 ## 6.2.0 - 2026-06-08
 
 ### Added

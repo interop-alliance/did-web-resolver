@@ -316,7 +316,9 @@ export class DidWebResolver implements DidMethodDriver {
     livePair.controller = did
     livePair.id = `${did}#${fragment}`
 
-    const publicNode = livePair.export({
+    // `export()` may be synchronous (e.g. ed25519) or asynchronous (e.g. the
+    // WebCrypto-backed ecdsa-multikey suite), so always await it.
+    const publicNode = await livePair.export({
       publicKey: true,
       includeContext: true
     })

@@ -257,6 +257,52 @@ describe('DidWebResolver', () => {
       assert.equal(assertionNode.type, 'Multikey')
       assert.notStrictEqual(authNode, assertionNode)
     })
+
+    it('should await a suite with an asynchronous export()', async () => {
+      const didWeb = makeResolver()
+      const { didDocument } = (await didWeb.generate({
+        url: 'https://example.com'
+      })) as any
+
+      // A suite whose export() is asynchronous, like the WebCrypto-backed
+      // ecdsa-multikey suite. Before addVerificationMethod() awaited export(),
+      // this embedded an unresolved Promise, yielding `{}` in the document.
+      const asyncKey: any = {
+        publicKeyMultibase: 'zDnaTESTpublicKeyMultibaseValue',
+        async export({ includeContext }: any) {
+          const node: any = {
+            id: this.id,
+            type: 'Multikey',
+            controller: this.controller,
+            publicKeyMultibase: this.publicKeyMultibase
+          }
+          if (includeContext) {
+            node['@context'] = 'https://w3id.org/security/multikey/v1'
+          }
+          return node
+        }
+      }
+
+      await didWeb.addVerificationMethod({
+        didDocument,
+        keyPair: asyncKey,
+        fragment: 'key-async',
+        purposes: ['assertionMethod']
+      })
+
+      const newId = 'did:web:example.com#key-async'
+      const node = didDocument.assertionMethod.find(
+        (entry: any) => entry?.id === newId
+      )
+      assert.equal(node.type, 'Multikey')
+      assert.equal(node.publicKeyMultibase, 'zDnaTESTpublicKeyMultibaseValue')
+      assert.equal(node.controller, 'did:web:example.com')
+      assert(
+        didDocument['@context'].includes(
+          'https://w3id.org/security/multikey/v1'
+        )
+      )
+    })
   })
 
   describe('get()', () => {
