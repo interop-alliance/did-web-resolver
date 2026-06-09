@@ -1,5 +1,23 @@
 # did-web-driver ChangeLog
 
+## 6.2.0 - TBD
+
+### Added
+- `addVerificationMethod()` accepts an `embed` option (default `true`). When
+  `true`, the full public key description object is embedded directly under each
+  requested verification relationship (e.g. `authentication`, `assertionMethod`),
+  a fresh copy per relationship; when `false`, the public node is listed once in
+  `verificationMethod` and referenced by id. The library's own document builders
+  (`generate()`, `publicKeyToDidDoc()`) pass `embed: false`, so their output is
+  unchanged. Key lookup (`methodFor`, `publicMethodFor`, `getNode`) works with
+  either form.
+
+### Changed
+- Guard the `structuredClone` call in `getNode` with a JSON round-trip
+  fallback, so the resolver works on runtimes that lack
+  `structuredClone` (e.g. React Native's Hermes engine). Native `structuredClone`
+  is still used when available.
+
 ## 6.1.1 - 2026-06-06
 
 ### Added

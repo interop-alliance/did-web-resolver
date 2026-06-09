@@ -205,6 +205,62 @@ describe('DidWebResolver', () => {
     })
   })
 
+  describe('addVerificationMethod()', () => {
+    it('should reference the method by id when embed is false', async () => {
+      const didWeb = makeResolver()
+      const { didDocument } = await didWeb.generate({
+        url: 'https://example.com'
+      })
+
+      const newKey = await Ed25519VerificationKey.generate()
+      await didWeb.addVerificationMethod({
+        didDocument,
+        keyPair: newKey,
+        fragment: 'key-2',
+        purposes: ['authentication'],
+        embed: false
+      })
+
+      const newId = 'did:web:example.com#key-2'
+      // Listed once in verificationMethod, referenced by id under the purpose.
+      assert(
+        didDocument.verificationMethod.find((vm: any) => vm.id === newId)
+      )
+      assert.equal(didDocument.authentication[1], newId)
+    })
+
+    it('should embed the public key under each purpose by default', async () => {
+      const didWeb = makeResolver()
+      const { didDocument } = await didWeb.generate({
+        url: 'https://example.com'
+      })
+      const vmCountBefore = didDocument.verificationMethod.length
+
+      const newKey = await Ed25519VerificationKey.generate()
+      await didWeb.addVerificationMethod({
+        didDocument,
+        keyPair: newKey,
+        fragment: 'key-2',
+        purposes: ['authentication', 'assertionMethod']
+      })
+
+      const newId = 'did:web:example.com#key-2'
+      // Not added to the verificationMethod bucket.
+      assert.equal(didDocument.verificationMethod.length, vmCountBefore)
+      // Embedded as full objects under each requested purpose, one copy each.
+      const authNode = didDocument.authentication.find(
+        (entry: any) => entry?.id === newId
+      )
+      const assertionNode = didDocument.assertionMethod.find(
+        (entry: any) => entry?.id === newId
+      )
+      assert.equal(authNode.type, 'Multikey')
+      assert.property(authNode, 'publicKeyMultibase')
+      assert.equal(assertionNode.type, 'Multikey')
+      assert.notStrictEqual(authNode, assertionNode)
+    })
+  })
+
   describe('get()', () => {
     let didWeb: DidWebResolver
 

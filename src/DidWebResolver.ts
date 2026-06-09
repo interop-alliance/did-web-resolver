@@ -25,6 +25,19 @@ import type { FromMultibase, KeyPairClass, RegisteredKeyType } from './types.js'
 
 const { VERIFICATION_RELATIONSHIPS } = didIo
 
+/**
+ * Deep-clones a plain-JSON value. Uses the global `structuredClone` when present
+ * (faster, full semantics); otherwise falls back to a JSON round-trip. The
+ * fallback exists because some runtimes -- notably React Native's Hermes engine
+ * -- do not provide `structuredClone`, and the values cloned here (DID document
+ * entities) are plain JSON.
+ */
+function deepClone<T>(value: T): T {
+  return typeof structuredClone === 'function'
+    ? structuredClone(value)
+    : JSON.parse(JSON.stringify(value))
+}
+
 export function didFromUrl({ url }: { url?: string } = {}): string {
   if (!url) {
     throw new TypeError('Cannot convert url to did, missing url.')
@@ -143,7 +156,7 @@ export function getNode({
 
   return {
     '@context': contextsBySuite.get(match.type) ?? didDocument['@context'],
-    ...structuredClone(match)
+    ...deepClone(match)
   }
 }
 
@@ -237,9 +250,14 @@ export class DidWebResolver implements DidMethodDriver {
 
   /**
    * Adds a single verification method to a DID document: exports the key's
-   * public node, assigns it the id `${did}#${fragment}`, pushes it into
-   * `verificationMethod`, references it under each requested purpose, and
-   * accumulates the key's `@context`.
+   * public node, assigns it the id `${did}#${fragment}`, wires it into each
+   * requested verification relationship (purpose), and accumulates the key's
+   * `@context`.
+   *
+   * By default the full public key description object is embedded directly under
+   * each relationship (no `verificationMethod` entry). Pass `embed: false` to
+   * instead list the public node once in `verificationMethod` and reference it
+   * by id under each relationship.
    *
    * This is the foundational document-building primitive; it works on a freshly
    * created document or on one fetched and republished with rotated keys.
@@ -253,6 +271,9 @@ export class DidWebResolver implements DidMethodDriver {
    * @param [options.fragment] {string} - Author-chosen fragment (defaults to
    *   the key fingerprint).
    * @param [options.purposes] {string[]} - Verification relationships to wire.
+   * @param [options.embed=true] {boolean} - When `true`, embed the full
+   *   public key object under each relationship; when `false`, list it in
+   *   `verificationMethod` and reference it by id.
    * @param [options.serialization] {string} - `'multibase'` (default); `'jwk'`
    *   is reserved for when key suites expose JWK export.
    *
@@ -264,6 +285,7 @@ export class DidWebResolver implements DidMethodDriver {
     keyPair,
     fragment,
     purposes = DEFAULT_PURPOSES,
+    embed = true,
     serialization = 'multibase'
   }: {
     didDocument: any
@@ -271,6 +293,7 @@ export class DidWebResolver implements DidMethodDriver {
     keyPair: AbstractKeyPair | IKeyPair
     fragment?: string
     purposes?: string[]
+    embed?: boolean
     serialization?: string
   }): Promise<IDidDocument> {
     if (!didDocument?.id) {
@@ -299,15 +322,19 @@ export class DidWebResolver implements DidMethodDriver {
       _addContext({ didDocument, context })
     }
 
-    didDocument.verificationMethod = didDocument.verificationMethod ?? []
-    didDocument.verificationMethod.push(publicNode)
+    if (!embed) {
+      didDocument.verificationMethod = didDocument.verificationMethod ?? []
+      didDocument.verificationMethod.push(publicNode)
+    }
 
     for (const purpose of purposes) {
       if (!VERIFICATION_RELATIONSHIPS.has(purpose)) {
         throw new Error(`Unsupported key purpose: "${purpose}".`)
       }
       didDocument[purpose] = didDocument[purpose] ?? []
-      didDocument[purpose].push(publicNode.id)
+      // When embedding, place a fresh copy of the full public key description
+      // object under each relationship; otherwise reference it by id.
+      didDocument[purpose].push(embed ? deepClone(publicNode) : publicNode.id)
     }
 
     keyPairs?.set(livePair.id!, livePair)
@@ -382,6 +409,7 @@ export class DidWebResolver implements DidMethodDriver {
           keyPair: entry.keyPair,
           fragment: entry.fragment,
           purposes: entry.purposes,
+          embed: false,
           serialization: entry.serialization
         })
       }
@@ -395,7 +423,8 @@ export class DidWebResolver implements DidMethodDriver {
           didDocument,
           keyPairs,
           keyPair,
-          purposes: DEFAULT_PURPOSES
+          purposes: DEFAULT_PURPOSES,
+          embed: false
         })
       }
       if (keyAgreementKeyPair) {
@@ -403,7 +432,8 @@ export class DidWebResolver implements DidMethodDriver {
           didDocument,
           keyPairs,
           keyPair: keyAgreementKeyPair,
-          purposes: ['keyAgreement']
+          purposes: ['keyAgreement'],
+          embed: false
         })
       }
     }
@@ -502,7 +532,8 @@ export class DidWebResolver implements DidMethodDriver {
     await this.addVerificationMethod({
       didDocument,
       keyPair: publicKeyDescription,
-      purposes: DEFAULT_PURPOSES
+      purposes: DEFAULT_PURPOSES,
+      embed: false
     })
     return { didDocument }
   }
