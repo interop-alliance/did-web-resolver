@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 6.2.1 - TBD
+## 6.2.1 - 2026-06-09
 
 ### Changed
 - Update `@interop/data-integrity-core` to `^7.0.0` (and `@interop/did-io` to
