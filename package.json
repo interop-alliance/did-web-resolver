@@ -36,8 +36,8 @@
   "sideEffects": false,
   "dependencies": {
     "@interop/bnid": "^6.0.1",
-    "@interop/data-integrity-core": "^7.0.0",
-    "@interop/did-io": "^4.0.4",
+    "@interop/data-integrity-core": "^8.0.0",
+    "@interop/did-io": "^4.0.5",
     "@interop/http-client": "^1.0.3",
     "did-context": "^3.1.1"
   },

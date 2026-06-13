@@ -1,5 +1,2 @@
 minimumReleaseAgeExclude:
-  - '@interop/bnid@6.0.1'
-  - '@interop/data-integrity-core@7.0.0'
-  - '@interop/did-io@4.0.4'
-  - '@interop/ed25519-verification-key@8.0.0'
+  - '@interop/did-io@4.0.5'
