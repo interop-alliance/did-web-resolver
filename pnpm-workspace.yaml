@@ -1,2 +1,2 @@
 minimumReleaseAgeExclude:
-  - '@interop/did-io@4.0.5'
+  - '@interop/http-client@1.0.4'

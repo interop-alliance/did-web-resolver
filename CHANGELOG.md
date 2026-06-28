@@ -1,5 +1,11 @@
 # did-web-driver ChangeLog
 
+## 6.2.3 - 2026-06-28
+
+### Fixed
+- Update to latest `@interop/http-client@1.0.4` (fixes json content type
+  detection).
+
 ## 6.2.2 - 2026-06-13
 
 ### Changed
