@@ -20,8 +20,9 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Update npm for trusted publishing
-        run: npm install -g npm@latest    # trusted publishing needs npm >= 11.5.1
+      # Node 24's bundled npm is already >= 11.5.1, as trusted publishing
+      # requires. Do not `npm install -g npm@latest` here: npm overwriting
+      # itself in the runner toolcache leaves it unable to resolve `sigstore`.
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

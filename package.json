@@ -36,15 +36,15 @@
   "sideEffects": false,
   "dependencies": {
     "@interop/bnid": "^6.0.2",
-    "@interop/data-integrity-core": "^8.1.0",
-    "@interop/did-io": "^4.0.6",
+    "@interop/data-integrity-core": "^8.3.0",
+    "@interop/did-io": "^4.1.0",
     "@interop/http-client": "^1.0.4",
     "did-context": "^3.1.1"
   },
   "devDependencies": {
     "@digitalcredentials/x25519-key-agreement-key-2020": "^3.0.0",
     "@eslint/js": "^10.0.1",
-    "@interop/ed25519-verification-key": "^8.0.2",
+    "@interop/ed25519-verification-key": "^8.0.3",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
     "@vitest/coverage-v8": "^4.1.7",
