@@ -5,19 +5,41 @@
  */
 
 /**
- * Asserts that the given value is an HTTPS URL.
+ * Determines whether a hostname is a loopback host -- `localhost` or
+ * `127.0.0.1`. Hostname-based (a URL's `hostname` excludes the port), so any
+ * port matches. Used to permit `http:` for local development, as the did:web
+ * spec allows, while every other host still requires `https:`.
+ *
+ * @param hostname {string} - The URL hostname (without port).
+ *
+ * @returns {boolean} `true` if the hostname is a loopback host.
+ */
+export function isLoopbackHostname(hostname: string): boolean {
+  return hostname === 'localhost' || hostname === '127.0.0.1'
+}
+
+/**
+ * Asserts that the given value is an HTTPS URL. As an exception, `http:` is
+ * permitted for loopback hosts (`localhost` or `127.0.0.1`, any port), which
+ * the did:web spec allows for local development; `http:` on any other host
+ * still throws.
  *
  * @param url {URL|string} - The URL to check.
  *
- * @throws {TypeError} If the value is not a URL or its protocol is not https.
+ * @throws {TypeError} If the value is not a URL, or its protocol is not https
+ *   (and not http on a loopback host).
  */
 export function assertHttpsUrl(url: URL | string): void {
   const parsed = assertUrl(url)
-  if (parsed.protocol !== 'https:') {
-    throw new TypeError(
-      `"url" protocol must be "https:"; received "${parsed.protocol}".`
-    )
+  if (parsed.protocol === 'https:') {
+    return
   }
+  if (parsed.protocol === 'http:' && isLoopbackHostname(parsed.hostname)) {
+    return
+  }
+  throw new TypeError(
+    `"url" protocol must be "https:"; received "${parsed.protocol}".`
+  )
 }
 
 /**

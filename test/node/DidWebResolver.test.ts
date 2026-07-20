@@ -8,6 +8,7 @@ import {
   didFromUrl,
   getNode
 } from '../../src/index.js'
+import { assertHttpsUrl } from '../../src/assertions.js'
 
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { X25519KeyAgreementKey2020 } from '@digitalcredentials/x25519-key-agreement-key-2020'
@@ -496,13 +497,35 @@ describe('DidWebResolver', () => {
     it('should url-decode host', () => {
       assert.equal(
         urlFromDid({ did: 'did:web:localhost%3A8080' }),
-        'https://localhost:8080/.well-known/did.json'
+        'http://localhost:8080/.well-known/did.json'
       )
     })
 
     it('should preserve hash fragments for dids without paths', () => {
       const url = urlFromDid({ did: 'did:web:localhost%3A8080#keyId' })
-      assert.equal(url, 'https://localhost:8080/.well-known/did.json#keyId')
+      assert.equal(url, 'http://localhost:8080/.well-known/did.json#keyId')
+    })
+
+    it('should use http for loopback hosts (localhost / 127.0.0.1)', () => {
+      assert.equal(
+        urlFromDid({ did: 'did:web:localhost%3A3002' }),
+        'http://localhost:3002/.well-known/did.json'
+      )
+      assert.equal(
+        urlFromDid({ did: 'did:web:localhost%3A3002:u:alice' }),
+        'http://localhost:3002/u/alice/did.json'
+      )
+      assert.equal(
+        urlFromDid({ did: 'did:web:127.0.0.1%3A8080' }),
+        'http://127.0.0.1:8080/.well-known/did.json'
+      )
+    })
+
+    it('should keep https for non-loopback hosts', () => {
+      assert.equal(
+        urlFromDid({ did: 'did:web:example.com' }),
+        'https://example.com/.well-known/did.json'
+      )
     })
 
     // See: https://w3c-ccg.github.io/did-method-web/#example-creating-the-did-with-optional-path
@@ -543,7 +566,7 @@ describe('DidWebResolver', () => {
       assert.equal(error.message, 'Cannot convert url to did, missing url.')
     })
 
-    it('should error on http URLs', () => {
+    it('should error on http URLs for non-loopback hosts', () => {
       let error
       try {
         didFromUrl({ url: 'http://example.com' })
@@ -551,6 +574,17 @@ describe('DidWebResolver', () => {
         error = e
       }
       assert.equal(error.message, 'did:web does not support non-HTTPS URLs.')
+    })
+
+    it('should accept http URLs for loopback hosts', () => {
+      assert.equal(
+        didFromUrl({ url: 'http://localhost:3002/.well-known/did.json' }),
+        'did:web:localhost%3A3002'
+      )
+      assert.equal(
+        didFromUrl({ url: 'http://127.0.0.1:8080/.well-known/did.json' }),
+        'did:web:127.0.0.1%3A8080'
+      )
     })
 
     it('should error on invalid URLs', () => {
@@ -608,5 +642,26 @@ describe('DidWebResolver', () => {
         'did:web:example.com:path:some%2Bsubpath'
       )
     })
+  })
+})
+
+describe('assertHttpsUrl()', () => {
+  it('should pass for https URLs', () => {
+    assert.doesNotThrow(() => assertHttpsUrl('https://example.com'))
+  })
+
+  it('should pass for http URLs on loopback hosts', () => {
+    assert.doesNotThrow(() => assertHttpsUrl('http://localhost:3002'))
+    assert.doesNotThrow(() => assertHttpsUrl('http://127.0.0.1:8080'))
+  })
+
+  it('should throw for http URLs on non-loopback hosts', () => {
+    let error
+    try {
+      assertHttpsUrl('http://example.com')
+    } catch (err: any) {
+      error = err
+    }
+    assert.include(error.message, '"url" protocol must be "https:"')
   })
 })

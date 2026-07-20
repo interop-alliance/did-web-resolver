@@ -1,8 +1,9 @@
 /**
  * A `did:web` method resolver and document generator for the `@interop/did-io`
  * library. Builds `did:web` DID documents directly from registered key-suite
- * instances (no `crypto-ld` dependency) and resolves them over HTTPS with
- * SSRF, response-size, and document-`id` safety checks.
+ * instances (no `crypto-ld` dependency) and resolves them over HTTPS (plain
+ * HTTP is permitted only for loopback hosts) with SSRF, response-size, and
+ * document-`id` safety checks.
  */
 import { httpClient } from '@interop/http-client'
 import * as didIo from '@interop/did-io'
@@ -13,7 +14,7 @@ import {
   contextsBySuite,
   defaultFetchOptions
 } from './constants.js'
-import { assertDomain } from './assertions.js'
+import { assertDomain, isLoopbackHostname } from './assertions.js'
 import type { DidMethodDriver } from '@interop/did-io'
 import type {
   AbstractKeyPair,
@@ -43,15 +44,21 @@ export function didFromUrl({ url }: { url?: string } = {}): string {
   if (!url) {
     throw new TypeError('Cannot convert url to did, missing url.')
   }
-  if (url.startsWith('http:')) {
-    throw new TypeError('did:web does not support non-HTTPS URLs.')
-  }
 
   let parsedUrl
   try {
     parsedUrl = new URL(url)
   } catch (cause) {
     throw new TypeError(`Invalid url: "${url}".`, { cause })
+  }
+
+  // http is permitted only for loopback hosts (localhost / 127.0.0.1), which
+  // the did:web spec allows for local development; every other host needs https.
+  if (
+    parsedUrl.protocol === 'http:' &&
+    !isLoopbackHostname(parsedUrl.hostname)
+  ) {
+    throw new TypeError('did:web does not support non-HTTPS URLs.')
   }
 
   const { host } = parsedUrl
@@ -96,6 +103,11 @@ export function urlFromDid({ did }: { did: string | undefined }): string {
     // URI-decode the url (in case it contained a port number,
     // for example, `did:web:localhost%3A8080`
     parsedUrl = new URL('https://' + decodeURIComponent(urlNoProtocol))
+    // The did:web spec permits http for loopback hosts during local
+    // development; every other host stays on https.
+    if (isLoopbackHostname(parsedUrl.hostname)) {
+      parsedUrl.protocol = 'http:'
+    }
   } catch (cause) {
     throw new TypeError(`Cannot construct url from did: "${did}".`, { cause })
   }

@@ -1,5 +1,15 @@
 # did-web-driver ChangeLog
 
+## 6.3.0 - TBD
+
+### Changed
+- Permit the `http:` protocol for `did:web` resolution when the DID's host is a
+  loopback host (`localhost` or `127.0.0.1`, any port), as the did:web spec
+  allows for local development. `urlFromDid()` now builds `http://` URLs for
+  those hosts, `didFromUrl()` accepts `http:` URLs for them, and
+  `assertHttpsUrl()` no longer throws for them. Every other host continues to
+  require `https:`.
+
 ## 6.2.4 - 2026-07-17
 
 ### Changed
