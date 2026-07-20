@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 6.3.0 - TBD
+## 6.3.0 - 2026-07-19
 
 ### Changed
 - Permit the `http:` protocol for `did:web` resolution when the DID's host is a
