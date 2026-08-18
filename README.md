@@ -286,6 +286,9 @@ import 'react-native-url-polyfill/auto'
 
 PRs accepted.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) -- code style and contribution
+conventions.
+
 ## License
 
 [The MIT License](LICENSE.md) ©2020-2021 Interop Alliance and Dmitri Zagidulin

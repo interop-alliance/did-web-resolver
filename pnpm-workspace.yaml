@@ -1,4 +1,2 @@
 minimumReleaseAgeExclude:
-  - '@interop/data-integrity-core@8.3.0'
-  - '@interop/did-io@4.1.0'
-  - '@interop/ed25519-verification-key@8.0.3'
+  - '@interop/*'
