@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 6.3.2 - TBD
+## 6.3.2 - 2026-09-05
 
 ### Changed
 - Update to latest `@interop/ed25519-verification-key` dep.
