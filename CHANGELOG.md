@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 6.3.3 - TBD
+## 6.3.3 - 2026-09-10
 
 ### Changed
 - Update to latest ed25519 key dep (`didKeySigner()`).
