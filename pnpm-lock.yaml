@@ -12,11 +12,11 @@ importers:
         specifier: ^6.0.2
         version: 6.0.2
       '@interop/data-integrity-core':
-        specifier: ^8.7.1
-        version: 8.7.1
+        specifier: ^8.8.0
+        version: 8.8.0
       '@interop/did-io':
-        specifier: ^4.1.1
-        version: 4.1.1
+        specifier: ^4.1.2
+        version: 4.1.2
       '@interop/http-client':
         specifier: ^1.0.5
         version: 1.0.5
@@ -31,8 +31,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.7.0)
       '@interop/ed25519-verification-key':
-        specifier: ^8.2.0
-        version: 8.2.0
+        specifier: ^8.2.1
+        version: 8.2.1
       '@playwright/test':
         specifier: ^1.60.0
         version: 1.61.1
@@ -178,16 +178,16 @@ packages:
       react-native-get-random-values:
         optional: true
 
-  '@interop/data-integrity-core@8.7.1':
-    resolution: {integrity: sha512-KD/AFAfnsDVa7Kz3yzx0t/L1A+GlFI0RahbtXsfzcznRlN63fPZCJ6W3C+unPyksCYsILZIHcOFFJkZe6eKtkw==}
+  '@interop/data-integrity-core@8.8.0':
+    resolution: {integrity: sha512-c5zWCHMfMXmEBbJs8AZXvrvbNKVMnTXBcp5poojUtRhpEi9qHi81jF/F1NmLiVQApIQITpIDyBG7/79WxIjCzA==}
     engines: {node: '>=24.0'}
 
-  '@interop/did-io@4.1.1':
-    resolution: {integrity: sha512-uD5cnRLoDq5TJWNYASv3HomQXr2xW2TanQZ13TPcmRRo+r8QGPn/DY10kiXw+FYArrUorn8xxjsSSw7C2zS94w==}
+  '@interop/did-io@4.1.2':
+    resolution: {integrity: sha512-Sv5ZoEMRCEYq5Ixg79QbYjAiZL3ao94BGFCz7uYgtpXyI6N0ZdMaEX+C4ar11SiszOadA0IM+Gnj/GanKKFqcA==}
     engines: {node: '>=24.0'}
 
-  '@interop/ed25519-verification-key@8.2.0':
-    resolution: {integrity: sha512-JG5sPe/9FHPsi41tmwz7f6UyKxULhoEABxIHKCKKxFgfrP52Wi6FFwnPYO93K254rw1cZI0omdqczN76F7dQdg==}
+  '@interop/ed25519-verification-key@8.2.1':
+    resolution: {integrity: sha512-ft1j14xt6uu6T27begDXn15Cb7Mab1OZZOpbQxMhKyRrhKey56i+HMx2Ia53XPimhdXuVAGj7nCEFlcR4yOj1w==}
     engines: {node: '>=20'}
     peerDependencies:
       react-native-get-random-values: '>=1.8.0'
@@ -1176,18 +1176,18 @@ snapshots:
     dependencies:
       '@scure/base': 2.2.0
 
-  '@interop/data-integrity-core@8.7.1':
+  '@interop/data-integrity-core@8.8.0':
     dependencies:
       '@scure/base': 2.3.0
 
-  '@interop/did-io@4.1.1':
+  '@interop/did-io@4.1.2':
     dependencies:
-      '@interop/data-integrity-core': 8.7.1
+      '@interop/data-integrity-core': 8.8.0
       '@interop/lru-memoize': 4.0.3
 
-  '@interop/ed25519-verification-key@8.2.0':
+  '@interop/ed25519-verification-key@8.2.1':
     dependencies:
-      '@interop/data-integrity-core': 8.7.1
+      '@interop/data-integrity-core': 8.8.0
       '@noble/ed25519': 3.1.0
       '@noble/hashes': 2.2.0
       '@scure/base': 2.3.0

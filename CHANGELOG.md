@@ -1,5 +1,10 @@
 # did-web-driver ChangeLog
 
+## 6.3.4 - TBD
+
+### Changed
+- Update to latest `@interop/data-integrity-core@8.8.0`.
+
 ## 6.3.3 - 2026-09-10
 
 ### Changed
