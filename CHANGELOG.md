@@ -1,5 +1,10 @@
 # did-web-driver ChangeLog
 
+## 6.3.5 - TBD
+
+### Changed
+- Update to latest did-io.
+
 ## 6.3.4 - 2026-09-25
 
 ### Changed

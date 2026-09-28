@@ -37,7 +37,7 @@
   "dependencies": {
     "@interop/bnid": "^6.0.2",
     "@interop/data-integrity-core": "^8.8.0",
-    "@interop/did-io": "^4.1.2",
+    "@interop/did-io": "^4.2.0",
     "@interop/http-client": "^1.0.5",
     "did-context": "^3.1.1"
   },
