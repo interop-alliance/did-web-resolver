@@ -1,5 +1,17 @@
 # did-web-driver ChangeLog
 
+## 6.5.0 - TBD
+
+### Added
+
+- `fetchDocument` constructor option (type `FetchDocument`): fetches a DID
+  document by URL and returns the parsed body, so a consumer can route the
+  fetch through its own HTTP stack. Defaults to `defaultFetchDocument`, which
+  wraps `@interop/http-client` `get()` as before. `DidWebResolverOptions`
+  names the constructor options.
+- `get()` rejects a fetched document without a string `id` with a distinct
+  `notFound` message, instead of reporting it as an id mismatch.
+
 ## 6.4.1 - 2026-10-12
 
 ### Fixed

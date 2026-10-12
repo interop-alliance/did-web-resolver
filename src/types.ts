@@ -36,3 +36,26 @@ export interface RegisteredKeyType {
   fromMultibase: FromMultibase
   generate?: (options?: object) => Promise<AbstractKeyPair>
 }
+
+/**
+ * Fetches a DID document by URL and returns the parsed JSON body. Throws on a
+ * transport failure or a non-2xx status. `fetchOptions` are the driver's
+ * network limits (`size` in bytes, `timeout` in ms) merged with the per-call
+ * ones; an injected fetcher is responsible for enforcing them. `agent` is the
+ * optional Node.js agent passed to `get()`.
+ */
+export type FetchDocument = (options: {
+  url: string
+  fetchOptions: any
+  agent?: any
+}) => Promise<unknown>
+
+/**
+ * Constructor options for `DidWebResolver` and `driver()`.
+ */
+export interface DidWebResolverOptions {
+  allowList?: string[]
+  fetchOptions?: any
+  fetchDocument?: FetchDocument
+  logger?: any
+}

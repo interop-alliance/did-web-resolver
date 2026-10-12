@@ -25,7 +25,13 @@ import {
   type ILDContext,
   type IPublicKey
 } from '@interop/data-integrity-core'
-import type { FromMultibase, KeyPairClass, RegisteredKeyType } from './types.js'
+import type {
+  DidWebResolverOptions,
+  FetchDocument,
+  FromMultibase,
+  KeyPairClass,
+  RegisteredKeyType
+} from './types.js'
 
 const { VERIFICATION_RELATIONSHIPS } = didIo
 
@@ -194,10 +200,23 @@ interface VerificationMethodEntry {
   serialization?: string
 }
 
+/**
+ * The default {@link FetchDocument}: fetches with `@interop/http-client`.
+ */
+export async function defaultFetchDocument({
+  url,
+  fetchOptions,
+  agent
+}: Parameters<FetchDocument>[0]): Promise<unknown> {
+  const { data } = await httpClient.get(url, { ...fetchOptions, agent })
+  return data
+}
+
 export class DidWebResolver implements DidMethodDriver {
   public method: string
   public allowList: string[]
   public fetchOptions: any
+  public fetchDocument: FetchDocument
   public logger: any
   public _allowedKeyTypes: Map<string, RegisteredKeyType>
 
@@ -207,16 +226,20 @@ export class DidWebResolver implements DidMethodDriver {
    *   (SSRF gate). Empty/absent means no restriction.
    * @param [options.fetchOptions] {object} - Network limits passed to the http
    *   client (`size` in bytes, `timeout` in ms).
+   * @param [options.fetchDocument] {FetchDocument} - Fetches a DID document by
+   *   URL. Defaults to `@interop/http-client`.
    * @param [options.logger] {object} - Logger object (with .info, .error, etc).
    */
   constructor({
     allowList = [],
     fetchOptions = defaultFetchOptions,
+    fetchDocument = defaultFetchDocument,
     logger = console
-  }: { allowList?: string[]; fetchOptions?: any; logger?: any } = {}) {
+  }: DidWebResolverOptions = {}) {
     this.method = 'web' // did:web:... (used for didIo resolver harness)
     this.allowList = allowList
     this.fetchOptions = fetchOptions
+    this.fetchDocument = fetchDocument
     this.logger = logger
     this._allowedKeyTypes = new Map()
   }
@@ -585,8 +608,8 @@ export class DidWebResolver implements DidMethodDriver {
    *   merged over the driver's defaults.
    * @param [options.logger] {object} - Logger object.
    *
-   * @throws {DIDResolutionError} With code `notFound` if the fetched document's
-   *   id does not match the requested DID.
+   * @throws {DIDResolutionError} With code `notFound` if the fetched document
+   *   has no string `id` or its id does not match the requested DID.
    * @throws {VerificationMethodError} With code `notFound` if a fragment was
    *   given and no subnode has that id.
    *
@@ -624,21 +647,26 @@ export class DidWebResolver implements DidMethodDriver {
 
     let didDocument: any
     try {
-      logger.info(`Fetching "${fetchUrl}" via http client.`)
-      const result = await httpClient.get(fetchUrl, {
-        ...this.fetchOptions,
-        ...fetchOptions,
+      logger.info(`Fetching "${fetchUrl}".`)
+      didDocument = await this.fetchDocument({
+        url: fetchUrl,
+        fetchOptions: { ...this.fetchOptions, ...fetchOptions },
         agent
       })
-      didDocument = result.data
     } catch (err: any) {
-      // status is HTTP status code; data is the server's JSON error if any.
-      const { data, status } = err ?? {}
-      logger.error(`Http ${status ?? ''} error:`, data)
+      logger.error(`Failed to fetch "${fetchUrl}":`, err)
       throw err
     }
 
-    if (didDocument?.id !== didAuthority) {
+    // A fetcher that resolves with an error body instead of throwing (as some
+    // HTTP wrappers do on a non-2xx status) must not read as an id mismatch.
+    if (typeof didDocument?.id !== 'string') {
+      throw new DIDResolutionError(
+        `Document fetched for DID "${didAuthority}" is not a DID document.`,
+        { code: 'notFound' }
+      )
+    }
+    if (didDocument.id !== didAuthority) {
       throw new DIDResolutionError(
         `DID document for DID "${didAuthority}" not found.`,
         { code: 'notFound' }

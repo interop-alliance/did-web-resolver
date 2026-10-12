@@ -29,8 +29,8 @@ Draft spec (W3C CCG Work Item):
 
 Other implementations:
 
-* https://github.com/digitalbazaar/did-method-web
-* https://github.com/decentralized-identity/web-did-resolver
+- https://github.com/digitalbazaar/did-method-web
+- https://github.com/decentralized-identity/web-did-resolver
 
 ## Usage
 
@@ -200,6 +200,38 @@ is made, and the fetched document's `id` must match the requested DID.
 const didDocument = await didWebDriver.get({ did: 'did:web:example.com' })
 ```
 
+#### Fetching through your own HTTP client
+
+By default `get()` fetches the DID document with `@interop/http-client`. Pass
+`fetchDocument` to route the fetch through an HTTP stack you control, for
+example one that shares a cache with your other document loads. It receives
+the document URL, the merged `fetchOptions`, and the `agent` (if any), and
+returns the parsed JSON body. It throws on a transport failure or a non-2xx
+status.
+
+An injected fetcher replaces the default network limits. The `fetchOptions` it
+receives (`size` in bytes, `timeout` in ms) are only enforced if the fetcher
+applies them itself. A fetcher that ignores them lets a hostile host return an
+unbounded or never-ending body.
+
+```js
+const didWebDriver = didWeb.driver({
+  fetchDocument: async ({ url, fetchOptions }) => {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(fetchOptions.timeout)
+    })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+    const body = await response.text()
+    if (body.length > fetchOptions.size) {
+      throw new Error(`Response exceeds ${fetchOptions.size} bytes`)
+    }
+    return JSON.parse(body)
+  }
+})
+```
+
 #### Managing the SSRF allow list
 
 The allow list is the driver's guard against
@@ -280,9 +312,9 @@ import 'react-native-url-polyfill/auto'
 
 ## Contribute
 
-* Coding Style: [Prettier](https://prettier.io/) + [ESLint](https://eslint.org/)
-* Docs: JSDoc
-* Readme: [standard-readme](https://github.com/RichardLitt/standard-readme)
+- Coding Style: [Prettier](https://prettier.io/) + [ESLint](https://eslint.org/)
+- Docs: JSDoc
+- Readme: [standard-readme](https://github.com/RichardLitt/standard-readme)
 
 PRs accepted.
 

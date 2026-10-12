@@ -4,6 +4,7 @@ import { httpClient } from '@interop/http-client'
 
 import {
   DidWebResolver,
+  type DidWebResolverOptions,
   urlFromDid,
   didFromUrl,
   getNode
@@ -17,9 +18,7 @@ import {
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { X25519KeyAgreementKey2020 } from '@digitalcredentials/x25519-key-agreement-key-2020'
 
-function makeResolver(
-  options: { allowList?: string[]; fetchOptions?: any; logger?: any } = {}
-): DidWebResolver {
+function makeResolver(options: DidWebResolverOptions = {}): DidWebResolver {
   const didWeb = new DidWebResolver(options)
   didWeb.use({ keyPairClass: Ed25519VerificationKey })
   return didWeb
@@ -351,6 +350,67 @@ describe('DidWebResolver', () => {
       assert.equal(
         spy.mock.calls[0]![0],
         'https://example.com/.well-known/did.json'
+      )
+    })
+
+    it('should fetch through an injected fetchDocument', async () => {
+      const { didDocument } = await didWeb.generate({
+        url: 'https://example.com'
+      })
+      const calls: unknown[] = []
+      const resolver = makeResolver({
+        fetchOptions: { size: 1 },
+        fetchDocument: async (options) => {
+          calls.push(options)
+          return didDocument
+        }
+      })
+
+      const result = await resolver.get({
+        did: 'did:web:example.com',
+        fetchOptions: { timeout: 2 }
+      })
+
+      assert.deepEqual(result, didDocument)
+      assert.deepEqual(calls, [
+        {
+          url: 'https://example.com/.well-known/did.json',
+          fetchOptions: { size: 1, timeout: 2 },
+          agent: undefined
+        }
+      ])
+    })
+
+    it('should propagate an error thrown by fetchDocument', async () => {
+      const resolver = makeResolver({
+        fetchDocument: async () => {
+          throw new Error('HTTP 503')
+        }
+      })
+
+      let error
+      try {
+        await resolver.get({ did: 'did:web:example.com' })
+      } catch (err: any) {
+        error = err
+      }
+      assert.equal(error?.message, 'HTTP 503')
+    })
+
+    it('should reject a fetched document without a string id', async () => {
+      const resolver = makeResolver({
+        fetchDocument: async () => ({ error: 'rate limited' })
+      })
+      let error: any
+      try {
+        await resolver.get({ did: 'did:web:example.com' })
+      } catch (err: any) {
+        error = err
+      }
+      assert.equal(error?.code, 'notFound')
+      assert.equal(
+        error?.message,
+        'Document fetched for DID "did:web:example.com" is not a DID document.'
       )
     })
 
