@@ -9,6 +9,10 @@ import {
   getNode
 } from '../../src/index.js'
 import { assertHttpsUrl } from '../../src/assertions.js'
+import {
+  DIDResolutionError,
+  VerificationMethodError
+} from '@interop/data-integrity-core'
 
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { X25519KeyAgreementKey2020 } from '@digitalcredentials/x25519-key-agreement-key-2020'
@@ -358,10 +362,28 @@ describe('DidWebResolver', () => {
       } catch (err: any) {
         error = err
       }
+      assert.instanceOf(error, DIDResolutionError)
+      assert.equal(error.code, 'notFound')
       assert.equal(
         error.message,
         'DID document for DID "did:web:example.com" not found.'
       )
+    })
+
+    it('should throw VerificationMethodError for a missing fragment', async () => {
+      const { didDocument } = await didWeb.generate({
+        url: 'https://example.com'
+      })
+      stubRequest({ data: didDocument })
+      let error
+      try {
+        await didWeb.get({ did: 'did:web:example.com#missing' })
+      } catch (err: any) {
+        error = err
+      }
+      assert.instanceOf(error, VerificationMethodError)
+      assert.equal(error.code, 'notFound')
+      assert.equal(error.verificationMethod, 'did:web:example.com#missing')
     })
 
     it('should dereference a verification method by fragment', async () => {
@@ -443,8 +465,17 @@ describe('DidWebResolver', () => {
         '@context': ['https://www.w3.org/ns/did/v1'],
         id: 'did:web:example.com'
       }
-      assert.throws(
-        () => getNode({ didDocument, id: 'did:web:example.com#missing' }),
+      let error: any
+      try {
+        getNode({ didDocument, id: 'did:web:example.com#missing' })
+      } catch (err) {
+        error = err
+      }
+      assert.instanceOf(error, VerificationMethodError)
+      assert.equal(error.code, 'notFound')
+      assert.equal(error.verificationMethod, 'did:web:example.com#missing')
+      assert.equal(
+        error.message,
         'DID document entity with id "did:web:example.com#missing" not found.'
       )
     })

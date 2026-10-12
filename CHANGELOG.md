@@ -1,33 +1,57 @@
 # did-web-driver ChangeLog
 
+## 6.4.0 - TBD
+
+### Added
+
+- Export `assertDomain` (the SSRF allow-list gate `get()` applies) so a
+  consumer that overrides `get()` can apply the same check.
+
+### Changed
+
+- `getNode()` (and so `get()` with a fragment) throws
+  `VerificationMethodError` (from `@interop/data-integrity-core`) with code
+  `notFound` and the `verificationMethod` id when no subnode has that id. The
+  message is unchanged.
+- `get()` throws `DIDResolutionError` with code `notFound` when the fetched
+  document's id does not match the requested DID. The message is unchanged.
+- Update to `@interop/data-integrity-core@8.9.0`, `@interop/did-io@4.2.2`,
+  `@interop/ed25519-verification-key@8.2.2`.
+
 ## 6.3.5 - 2026-09-28
 
 ### Changed
+
 - Update to latest did-io.
 
 ## 6.3.4 - 2026-09-25
 
 ### Changed
+
 - Update to latest `@interop/data-integrity-core@8.8.0`.
 
 ## 6.3.3 - 2026-09-10
 
 ### Changed
+
 - Update to latest ed25519 key dep (`didKeySigner()`).
 
 ## 6.3.2 - 2026-09-05
 
 ### Changed
+
 - Update to latest `@interop/ed25519-verification-key` dep.
 
 ## 6.3.1 - 2026-08-18
 
 ### Changed
+
 - Update to latest `@interop/data-integrity-core@8.7.1`.
 
 ## 6.3.0 - 2026-07-19
 
 ### Changed
+
 - Permit the `http:` protocol for `did:web` resolution when the DID's host is a
   loopback host (`localhost` or `127.0.0.1`, any port), as the did:web spec
   allows for local development. `urlFromDid()` now builds `http://` URLs for
@@ -38,28 +62,33 @@
 ## 6.2.4 - 2026-07-17
 
 ### Changed
+
 - Update to `@interop/data-integrity-core@8.3.0` and related.
 
 ## 6.2.3 - 2026-06-28
 
 ### Fixed
+
 - Update to latest `@interop/http-client@1.0.4` (fixes json content type
   detection).
 
 ## 6.2.2 - 2026-06-13
 
 ### Changed
+
 - Update to `@interop/data-integrity-core@8.0.0` and related.
 
 ## 6.2.1 - 2026-06-09
 
 ### Changed
+
 - Update `@interop/data-integrity-core` to `^7.0.0` (and `@interop/did-io` to
   `^4.0.4`, `@interop/ed25519-verification-key` to `^8.0.0`), in which
   `AbstractKeyPair.export()` is now `async`. No public API change here; see the
   `export()` fix below.
 
 ### Fixed
+
 - `addVerificationMethod()` now awaits the key suite's `export()`. Previously the
   result was used synchronously, which worked for suites with a synchronous
   `export()` (e.g. ed25519) but embedded an unresolved `Promise` for suites with
@@ -71,6 +100,7 @@
 ## 6.2.0 - 2026-06-08
 
 ### Added
+
 - `addVerificationMethod()` accepts an `embed` option (default `true`). When
   `true`, the full public key description object is embedded directly under each
   requested verification relationship (e.g. `authentication`, `assertionMethod`),
@@ -81,6 +111,7 @@
   either form.
 
 ### Changed
+
 - Guard the `structuredClone` call in `getNode` with a JSON round-trip
   fallback, so the resolver works on runtimes that lack
   `structuredClone` (e.g. React Native's Hermes engine). Native `structuredClone`
@@ -96,11 +127,13 @@
 ## 6.1.1 - 2026-06-06
 
 ### Added
+
 - Add default export to `package.json`.
 
 ## 6.1.0 - 2026-06-01
 
 ### Changed
+
 - Replace local `any` types in the `DidWebResolver` API with the shared types
   exported by `@interop/data-integrity-core` (`AbstractKeyPair`, `IDidDocument`,
   `IKeyPair`, `IPublicKey`), aligning the driver's parameter and return types
@@ -122,6 +155,7 @@
 ## 6.0.0 - 2026-05-27
 
 ### Changed
+
 - **BREAKING**: Switch to `@interop/http-client` (TypeScript) from the DCC fork.
 - **BREAKING**: Switch to `@interop/did-io` (TypeScript) from the DCC fork.
 - **BREAKING**: Update to `@digitalcredentials/bnid` v5 (TypeScript).
@@ -133,6 +167,7 @@
 - Added various security checks from `@digitalbazaar/did-method-web`
 
 ### Toolchain
+
 - Migrate to the `@interop/isomorphic-lib-template` infrastructure: `pnpm`,
   ESM-only build via `tsc`, Vitest (Node) + Playwright (browser) tests, and
   flat-config ESLint + Prettier.
@@ -140,12 +175,15 @@
 ## 5.0.0 - 2024-08-04
 
 ### Changed
+
 - **BREAKING**: Switch to DCC `http-client` fork, v5.0
 
 ## 4.0.0 - 2024-01-23
+
 Note: API and usage should remain the same.
 
 ### Changed
+
 - **BREAKING**: Convert to Typescript.
 - **BREAKING**: Switch back to Digital Bazaar's `http-client` fork.
 - **BREAKING**: Use DCC `bnid` v3 (which uses base-x instead of base58-universal).
@@ -153,37 +191,44 @@ Note: API and usage should remain the same.
 ## 3.0.1 - 2022-12-05
 
 ### Changed
+
 - **BREAKING**: FIx `urlFromDid` logic to handle path segments (see PR [pr #19](https://github.com/interop-alliance/did-web-resolver/pull/19)).
 
 ## 3.0.0 - 2022-09-22
 
 ### Changed
+
 - **BREAKING**: Fix `didFromUrl` implementation (see [issue #20](https://github.com/interop-alliance/did-web-resolver/issues/20)).
 
 ## 2.2.1 - 2022-02-04
 
 ### Changed
+
 - Fix URL error on React Native (use external `whatwg-url` package).
 
 ## 2.2.0 - 2022-01-26
 
 ### Added
+
 - Add ability to `.generate()` from a secret key seed.
 
 ## 2.1.1 - 2022-01-19
 
 ### Changed
+
 - Fix package.json's `exports` section (add `package.json`).
 
 ## 2.1.0 - 2022-01-19
 
 ### Changed
+
 - Update dependencies to `@digitalbazaar` npm published versions, remove
   github-based dependencies.
 
 ## 2.0.0 - 2022-01-01
 
 ### Changed
+
 - Use rollup for build-time transpile instead of esm.
 - Use "no ESM" branches for all other deps.
 - `.get()` now also resolves keys (to match other did-io drivers).
@@ -194,17 +239,20 @@ Note: API and usage should remain the same.
 ## 1.1.0 - 2021-04-25
 
 ### Added
+
 - Add `didWebDriver.publicMethodFor()`.
 
 ## 1.0.1 - 2021-04-25
 
 ### Fixed
+
 - Fix handling of hash fragments by `urlFromDid()`.
 - Add logger to constructor.
 
 ## 1.0.0 - 2021-04-24
 
 ### Changed
+
 - **BREAKING** Update to latest DID Core context
 - **BREAKING** Update to use crypto-ld v5 API, latest crypto suites
 - Add support for X25519KeyAgreementKey suite
@@ -212,9 +260,11 @@ Note: API and usage should remain the same.
 ## 0.2.0 - 2020-08-01
 
 ### Changed
+
 - **BREAKING**: Update to use crypto-ld v4 API
 
 ## 0.0.1
 
 ### Added
+
 - Initial implementation.

@@ -16,12 +16,14 @@ import {
 } from './constants.js'
 import { assertDomain, isLoopbackHostname } from './assertions.js'
 import type { DidMethodDriver } from '@interop/did-io'
-import type {
-  AbstractKeyPair,
-  IDIDDocument,
-  IKeyPair,
-  ILDContext,
-  IPublicKey
+import {
+  DIDResolutionError,
+  VerificationMethodError,
+  type AbstractKeyPair,
+  type IDIDDocument,
+  type IKeyPair,
+  type ILDContext,
+  type IPublicKey
 } from '@interop/data-integrity-core'
 import type { FromMultibase, KeyPairClass, RegisteredKeyType } from './types.js'
 
@@ -135,6 +137,9 @@ export function urlFromDid({ did }: { did: string | undefined }): string {
  * @param options.didDocument {object} - The DID Document to search.
  * @param options.id {string} - The full id of the subnode to return.
  *
+ * @throws {VerificationMethodError} With code `notFound` if no subnode has
+ *   that id.
+ *
  * @returns {object} The matched subnode, cloned, with `@context`.
  */
 export function getNode({
@@ -164,7 +169,10 @@ export function getNode({
   }
 
   if (!match) {
-    throw new Error(`DID document entity with id "${id}" not found.`)
+    throw new VerificationMethodError(
+      `DID document entity with id "${id}" not found.`,
+      { code: 'notFound', verificationMethod: id }
+    )
   }
 
   return {
@@ -251,7 +259,8 @@ export class DidWebResolver implements DidMethodDriver {
       return
     }
     if (
-      !(multibaseMultikeyHeader && typeof multibaseMultikeyHeader === 'string')
+      !multibaseMultikeyHeader ||
+      typeof multibaseMultikeyHeader !== 'string'
     ) {
       throw new TypeError('"multibaseMultikeyHeader" must be a string.')
     }
@@ -570,7 +579,10 @@ export class DidWebResolver implements DidMethodDriver {
    *   merged over the driver's defaults.
    * @param [options.logger] {object} - Logger object.
    *
-   * @throws {Error}
+   * @throws {DIDResolutionError} With code `notFound` if the fetched document's
+   *   id does not match the requested DID.
+   * @throws {VerificationMethodError} With code `notFound` if a fragment was
+   *   given and no subnode has that id.
    *
    * @returns {Promise<IDIDDocument | IPublicKey>} The DID Document, or a public
    *   key / subnode.
@@ -621,7 +633,10 @@ export class DidWebResolver implements DidMethodDriver {
     }
 
     if (didDocument?.id !== didAuthority) {
-      throw new Error(`DID document for DID "${didAuthority}" not found.`)
+      throw new DIDResolutionError(
+        `DID document for DID "${didAuthority}" not found.`,
+        { code: 'notFound' }
+      )
     }
 
     if (fragment) {
