@@ -1,5 +1,14 @@
 # did-web-driver ChangeLog
 
+## 6.4.1 - TBD
+
+### Fixed
+
+- `getNode()` treats a non-array `verificationMethod` as absent (throwing the
+  typed `notFound` error) instead of a `TypeError`, and clones the document's
+  `@context` when it falls back to it, so the returned node never aliases the
+  DID document.
+
 ## 6.4.0 - 2026-10-12
 
 ### Added

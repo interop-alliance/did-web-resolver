@@ -149,9 +149,12 @@ export function getNode({
   didDocument: any
   id: string
 }): any {
-  let match = (didDocument.verificationMethod ?? []).find(
-    (vm: any) => vm?.id === id
-  )
+  // An untrusted document may carry a non-array `verificationMethod`; treat
+  // it as absent rather than throwing a `TypeError` from `.find`.
+  const methods = didDocument.verificationMethod
+  let match = Array.isArray(methods)
+    ? methods.find((vm: any) => vm?.id === id)
+    : undefined
   if (!match) {
     for (const [key, value] of Object.entries(didDocument)) {
       if (key === '@context' || key === 'verificationMethod') {
@@ -175,8 +178,11 @@ export function getNode({
     )
   }
 
+  // Clone the document's own context too, so a caller that edits the node's
+  // `@context` cannot mutate a (possibly cached) DID document.
   return {
-    '@context': contextsBySuite.get(match.type) ?? didDocument['@context'],
+    '@context':
+      contextsBySuite.get(match.type) ?? deepClone(didDocument['@context']),
     ...deepClone(match)
   }
 }

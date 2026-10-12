@@ -479,6 +479,35 @@ describe('DidWebResolver', () => {
         'DID document entity with id "did:web:example.com#missing" not found.'
       )
     })
+
+    it('should treat a non-array verificationMethod as absent', () => {
+      const didDocument = {
+        '@context': ['https://www.w3.org/ns/did/v1'],
+        id: 'did:web:example.com',
+        verificationMethod: { id: 'did:web:example.com#key-1' }
+      }
+      let error: any
+      try {
+        getNode({ didDocument, id: 'did:web:example.com#key-1' })
+      } catch (err) {
+        error = err
+      }
+      assert.instanceOf(error, VerificationMethodError)
+      assert.equal(error.code, 'notFound')
+    })
+
+    it('should not share the document @context with the returned node', () => {
+      const didDocument = {
+        '@context': ['https://www.w3.org/ns/did/v1'],
+        id: 'did:web:example.com',
+        verificationMethod: [
+          { id: 'did:web:example.com#key-1', type: 'UnknownKeyType2099' }
+        ]
+      }
+      const node = getNode({ didDocument, id: 'did:web:example.com#key-1' })
+      assert.deepEqual(node['@context'], didDocument['@context'])
+      assert.notStrictEqual(node['@context'], didDocument['@context'])
+    })
   })
 
   describe('urlFromDid()', () => {
