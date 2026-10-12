@@ -1,6 +1,6 @@
 # did-web-driver ChangeLog
 
-## 6.4.0 - TBD
+## 6.4.0 - 2026-10-12
 
 ### Added
 
